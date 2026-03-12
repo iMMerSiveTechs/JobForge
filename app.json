@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "JobForge",
+    "slug": "jobforge",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0F1A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.immersivetechs.jobforge",
+      "infoPlist": {
+        "NSCameraUsageDescription": "JobForge uses the camera to capture site photos for estimates.",
+        "NSPhotoLibraryUsageDescription": "JobForge accesses your photo library to attach site photos to estimates.",
+        "NSMicrophoneUsageDescription": "JobForge uses the microphone for video recording.",
+        "NSPhotoLibraryAddUsageDescription": "JobForge saves site photos to your photo library.",
+        "NSUserNotificationsUsageDescription": "JobForge sends reminder notifications for follow-ups, appointments, and invoice reminders.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B0F1A"
+      },
+      "package": "com.immersivetechs.jobforge",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-image-picker"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1facc36c-3a6b-429d-9a12-de665698e97e"
+      }
+    }
+  }
+}
