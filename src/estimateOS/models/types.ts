@@ -1,4 +1,4 @@
-// ─── Shared TypeScript types for EstimateOS ────────────────────────────────
+// ─── Shared TypeScript types for JobForge ──────────────────────────────────
 // Field names match pricingEngineV2.ts exactly — do not rename.
 
 export const AI_META_PREFIX = '__ai_';

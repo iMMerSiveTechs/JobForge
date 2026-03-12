@@ -1,5 +1,5 @@
 // ─── OnboardingScreen ─────────────────────────────────────────────────────────
-// Phase 10: First-run setup for a new Estimate OS workspace.
+// Phase 10: First-run setup for a new JobForge workspace.
 // Collects company profile, vertical selection, and basic defaults.
 // Once complete, sets onboarding flag and navigates to main app.
 import React, { useState } from 'react';
@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getSettings, saveSettings } from '../storage/settings';
 import { T, radii } from '../theme';
 
-export const ONBOARDING_KEY = '@estimateos_onboarding_v1';
+export const ONBOARDING_KEY = '@jobforge_onboarding_v1';
 
 // ─── Vertical catalog (Phase 10) ─────────────────────────────────────────────
 // Only "roofing" is fully implemented. Others are placeholder-ready.

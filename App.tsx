@@ -1,4 +1,4 @@
-// ─── EstimateOS Root App ──────────────────────────────────────────────────────
+// ─── JobForge Root App ────────────────────────────────────────────────────────
 // Wires NavigationContainer → auth gate → onboarding gate → main tab navigator.
 //
 // Flow:

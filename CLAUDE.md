@@ -1,17 +1,31 @@
-# EstimateOS — CLAUDE.md
+# JobForge — CLAUDE.md
 
-AI assistant guide for the EstimateOS codebase. Read this before making changes.
+AI assistant guide for the JobForge codebase. Read this before making changes.
 
 ---
 
-## Project Overview
+## Lineage Note
 
-**EstimateOS** is a React Native (Expo) mobile application for generating service/construction estimates. It combines a deterministic pricing engine with AI-powered site analysis via photo/video intake.
+This codebase originated from an internal prototype called EstimateOS. **JobForge is the active product.** All development going forward targets the JobForge identity, brand, and product direction. The internal code namespace (`src/estimateOS/`) is retained for now as a stable import path — it does not reflect the product name. Do not treat "EstimateOS" references in code paths, comments, or storage keys as the product name; they are legacy artifacts being cleaned up incrementally.
+
+---
+
+## Product Overview
+
+**JobForge** is a field-first, mobile-first React Native (Expo) application for field service contractors. Estimating is the wedge: the core loop gets contractors from the field to a sent estimate in minutes.
+
+Core workflow:
+1. **Capture** — log a lead or intake a job from the field
+2. **Estimate** — pick a service, answer intake questions, get a priced range
+3. **Review / Edit** — override line items, add materials, refine the number
+4. **Send** — email the estimate PDF to the customer
+5. **Invoice** — convert to invoice when the job is accepted
+6. **Follow-up** — schedule reminders and track pipeline status
 
 Primary use cases:
 - Field operators capture site media and answer intake questions
 - The pricing engine computes a low–high estimate range
-- AI analysis (currently Phase 0/demo; backend not yet connected) pre-fills intake answers from photo/video evidence
+- AI analysis (Phase 0/demo; backend not yet connected) pre-fills intake answers from photo/video evidence
 - Operators can override individual price drivers or add manual line items
 
 ---
@@ -19,17 +33,17 @@ Primary use cases:
 ## Repository Layout
 
 ```
-/EstimateOS
+/JobForge
 ├── CLAUDE.md                          ← this file
 ├── src/
-│   └── estimateOS/
+│   └── estimateOS/                    # Internal namespace (legacy path, retained for stability)
 │       ├── components/                # Shared UI components
 │       │   ├── OverrideModal.tsx      # Per-driver price override sheet
 │       │   ├── PricingSummaryCard.tsx # Live pricing panel
 │       │   └── RuleBuilderModal.tsx   # 4-step wizard for adding pricing rules
 │       ├── domain/
 │       │   ├── pricingEngineV2.ts     # Core pricing logic (deterministic, cached)
-│       │   └── id.ts                  # Unique ID generation (referenced, not in tree)
+│       │   └── id.ts                  # Unique ID generation
 │       ├── media/
 │       │   ├── MediaConstants.ts      # Upload limits and compression settings
 │       │   ├── MediaGrid.tsx          # Photo/video grid UI
@@ -40,7 +54,7 @@ Primary use cases:
 │       │   ├── AiSiteAnalysisScreen.tsx  # AI media intake + analysis (Phase 0/1)
 │       │   └── NewEstimateScreen.tsx     # Estimate creation/editing screen
 │       ├── config/
-│       │   └── verticals.ts           # Built-in vertical configs (referenced)
+│       │   └── verticals.ts           # Built-in vertical configs
 │       ├── models/
 │       │   └── types.ts               # All shared TypeScript interfaces/types
 │       ├── storage/
@@ -50,10 +64,7 @@ Primary use cases:
 │       │   └── customVerticals.ts     # User-defined vertical storage
 │       └── theme/
 │           └── index.ts               # Design tokens: T, AI_D, radii, spacing
-└── estimateos-updated.zip             # Archived snapshot (do not edit)
 ```
-
-> **Note:** `config/`, `models/`, `storage/`, `theme/`, and `domain/id.ts` are referenced by imports but not present in the `src/estimateOS/` tree — they exist elsewhere in the broader Expo workspace that this source directory is part of.
 
 ---
 
@@ -320,7 +331,7 @@ The `AI_META_PREFIX` constant (`'__ai_'`) must be used when filtering metadata k
 
 ## Git Workflow
 
-- Active development branch: `claude/claude-md-mmfmsilvl965qjok-XccPH`
+- Active development branch: `claude/verify-jobforge-setup-fUPX0`
 - Main branch: `master`
 - Use descriptive commit messages explaining *why*, not just *what*
 - Push with: `git push -u origin <branch-name>`

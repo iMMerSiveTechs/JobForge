@@ -1,4 +1,4 @@
-// ─── EstimateOS Design Tokens ────────────────────────────────────────────────
+// ─── JobForge Design Tokens ──────────────────────────────────────────────────
 // Dark-first palette. All screens import from here.
 // Named: T (main palette), AI_D (AI screen dark variant), radii, spacing.
 // Component helpers: GlassPanel, GlowButton, Chip, FieldLabel, SectionHeader.

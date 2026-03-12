@@ -12,8 +12,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { T, radii } from '../theme';
 
-const CHECKLIST_KEY = '@estimateos_getting_started_v1';
-const DISMISSED_KEY = '@estimateos_getting_started_dismissed';
+const CHECKLIST_KEY = '@jobforge_getting_started_v1';
+const DISMISSED_KEY = '@jobforge_getting_started_dismissed';
 
 export interface ChecklistContext {
   hasBusinessProfile: boolean;
