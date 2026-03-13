@@ -217,7 +217,7 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="DashboardTab"  component={DashboardStack}  options={{ title: 'Dashboard'  }} />
-      <Tab.Screen name="EstimatesTab"  component={EstimatesStack}  options={{ title: 'Estimates'  }} />
+      <Tab.Screen name="EstimatesTab"  component={EstimatesStack}  options={{ title: 'Jobs'       }} />
       <Tab.Screen name="CustomersTab"  component={CustomersStack}  options={{ title: 'Customers'  }} />
       <Tab.Screen name="SettingsTab"   component={SettingsStack}   options={{ title: 'Settings'   }} />
     </Tab.Navigator>

@@ -1,7 +1,7 @@
 /**
  * monetization/plans.ts
  *
- * Canonical plan definitions for EstimateOS.
+ * Canonical plan definitions for JobForge.
  * All prices in USD cents.
  *
  * To adapt for a different shell:
