@@ -1,7 +1,7 @@
 /**
  * monetization/types.ts
  *
- * Canonical types for the EstimateOS monetization domain.
+ * Canonical types for the JobForge monetization domain.
  * Shell-agnostic: no company-specific names or branding live here.
  *
  * Relationship to models/types.ts:

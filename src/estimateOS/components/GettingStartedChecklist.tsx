@@ -36,7 +36,7 @@ interface ChecklistItem {
 function buildItems(ctx: ChecklistContext): ChecklistItem[] {
   return [
     { id: 'profile', label: 'Set up business profile', hint: 'Company name, phone, and address', done: ctx.hasBusinessProfile, screen: 'Settings' },
-    { id: 'customer', label: 'Add your first client', hint: 'Capture a lead or add a customer', done: ctx.hasCustomer, screen: 'Intake' },
+    { id: 'customer', label: 'Capture your first lead', hint: 'Capture a lead or add a customer', done: ctx.hasCustomer, screen: 'Intake' },
     { id: 'estimate', label: 'Create your first estimate', hint: 'Pick a service, answer questions, get a price range', done: ctx.hasEstimate, screen: 'NewEstimate' },
     { id: 'invoice', label: 'Create an invoice', hint: 'Convert an accepted estimate to an invoice', done: ctx.hasInvoice, screen: 'EstimatesTab' },
     { id: 'followup', label: 'Schedule a follow-up', hint: 'Set a reminder to check back with a customer', done: ctx.hasReminder, screen: 'CustomersTab' },

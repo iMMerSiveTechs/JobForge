@@ -1,7 +1,7 @@
 /**
  * services/appMonetization.ts — App monetization provider adaptor boundary.
  *
- * Handles the business operator's subscription to EstimateOS software features.
+ * Handles the business operator's subscription to JobForge software features.
  * Completely separate from service payments (see paymentProvider.ts).
  *
  * Responsibilities:

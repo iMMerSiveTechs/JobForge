@@ -139,10 +139,10 @@ function EstimatesStack() {
       <Stack.Screen
         name="EstimateList"
         component={EstimateListScreen}
-        options={{ title: 'Estimates' }}
+        options={{ title: 'Jobs' }}
       />
-      <Stack.Screen name="NewEstimate"       component={NewEstimateScreen}       options={{ title: 'New Estimate'  }} />
-      <Stack.Screen name="EstimateDetail"    component={EstimateDetailScreen}    options={{ title: 'Estimate'      }} />
+      <Stack.Screen name="NewEstimate"       component={NewEstimateScreen}       options={{ title: 'New Job'       }} />
+      <Stack.Screen name="EstimateDetail"    component={EstimateDetailScreen}    options={{ title: 'Job'           }} />
       <Stack.Screen name="ReviewSend"        component={ReviewSendScreen}        options={{ title: 'Review & Send' }} />
       <Stack.Screen name="AiSiteAnalysis"    component={AiSiteAnalysisScreen}    options={{ title: 'AI Analysis'   }} />
       <Stack.Screen name="Invoice"           component={InvoiceScreen}           options={{ title: 'Invoice'       }} />
@@ -161,7 +161,7 @@ function CustomersStack() {
         options={{ title: 'Customers' }}
       />
       <Stack.Screen name="CustomerDetail" component={CustomerDetailScreen} options={{ title: 'Customer'  }} />
-      <Stack.Screen name="EstimateDetail" component={EstimateDetailScreen} options={{ title: 'Estimate'  }} />
+      <Stack.Screen name="EstimateDetail" component={EstimateDetailScreen} options={{ title: 'Job'       }} />
       <Stack.Screen name="Invoice"        component={InvoiceScreen}        options={{ title: 'Invoice'   }} />
       <Stack.Screen name="ReviewSend"     component={ReviewSendScreen}     options={{ title: 'Review & Send' }} />
     </Stack.Navigator>
@@ -217,7 +217,7 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="DashboardTab"  component={DashboardStack}  options={{ title: 'Dashboard'  }} />
-      <Tab.Screen name="EstimatesTab"  component={EstimatesStack}  options={{ title: 'Estimates'  }} />
+      <Tab.Screen name="EstimatesTab"  component={EstimatesStack}  options={{ title: 'Jobs'       }} />
       <Tab.Screen name="CustomersTab"  component={CustomersStack}  options={{ title: 'Customers'  }} />
       <Tab.Screen name="SettingsTab"   component={SettingsStack}   options={{ title: 'Settings'   }} />
     </Tab.Navigator>
@@ -233,11 +233,11 @@ function RootStack() {
     <Stack.Navigator screenOptions={{ ...SCREEN_OPTIONS, presentation: 'card' }}>
       <Stack.Screen name="MainTabs"      component={MainTabs}          options={{ headerShown: false }} />
       {/* Cross-tab screens — navigable from any tab context */}
-      <Stack.Screen name="EstimateDetail"    component={EstimateDetailScreen}    options={{ title: 'Estimate'        }} />
+      <Stack.Screen name="EstimateDetail"    component={EstimateDetailScreen}    options={{ title: 'Job'             }} />
       <Stack.Screen name="ReviewSend"        component={ReviewSendScreen}        options={{ title: 'Review & Send'   }} />
       <Stack.Screen name="Invoice"           component={InvoiceScreen}           options={{ title: 'Invoice'         }} />
       <Stack.Screen name="CustomerDetail"    component={CustomerDetailScreen}    options={{ title: 'Customer'        }} />
-      <Stack.Screen name="NewEstimate"       component={NewEstimateScreen}       options={{ title: 'Estimate'        }} />
+      <Stack.Screen name="NewEstimate"       component={NewEstimateScreen}       options={{ title: 'New Job'         }} />
       <Stack.Screen name="AiSiteAnalysis"    component={AiSiteAnalysisScreen}    options={{ title: 'AI Analysis'     }} />
       <Stack.Screen name="Intake"            component={IntakeScreen}            options={{ title: 'New Lead'        }} />
       <Stack.Screen name="CommTemplates"     component={CommTemplatesScreen}     options={{ title: 'Templates'       }} />

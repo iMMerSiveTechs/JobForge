@@ -19,6 +19,81 @@ import { CommReviewModal } from '../components/CommReviewModal';
 import { generateEstimatePdf, sharePdf } from '../services/pdfService';
 import { intentToTimelineEvent } from '../services/commProvider';
 import { T, radii } from '../theme';
+import { ALL_VERTICALS } from '../config/verticals';
+
+// ─── Derived lifecycle stage ───────────────────────────────────────────────────
+// Pure function — no I/O. Derives a human-readable job stage from existing fields.
+function deriveJobStage(est: Estimate): { label: string; color: string; bgColor: string } {
+  const { status, followUpStatus, quoteSentAt } = est;
+  if (followUpStatus === 'won')
+    return { label: 'Won',             color: T.greenHi,  bgColor: T.greenLo };
+  if (followUpStatus === 'lost' || status === 'rejected')
+    return { label: 'Lost',            color: T.red,      bgColor: T.redLo };
+  if (status === 'accepted')
+    return { label: 'Approved',        color: T.greenHi,  bgColor: T.greenLo };
+  if (followUpStatus === 'follow_up_due')
+    return { label: 'Follow-up Due',   color: T.red,      bgColor: T.redLo };
+  if (followUpStatus === 'awaiting_customer')
+    return { label: 'Awaiting',        color: T.amberHi,  bgColor: T.amberLo };
+  if (followUpStatus === 'appointment_scheduled')
+    return { label: 'Appt. Scheduled', color: T.purple,   bgColor: T.purpleLo };
+  if (followUpStatus === 'quote_sent' || quoteSentAt)
+    return { label: 'Quote Sent',      color: T.teal,     bgColor: T.tealLo };
+  if (status === 'pending')
+    return { label: 'Priced',          color: T.amberHi,  bgColor: T.amberLo };
+  return   { label: 'In Progress',     color: T.sub,      bgColor: T.surface };
+}
+
+// ─── Derived next action ───────────────────────────────────────────────────────
+type NextAction = {
+  icon: string;
+  label: string;
+  subtitle: string;
+  action: 'edit' | 'send' | 'followUp' | 'invoice' | 'viewInvoice';
+  urgent?: boolean;
+  invoiceId?: string;
+};
+
+function deriveNextAction(est: Estimate, invs: Invoice[]): NextAction | null {
+  const { status, followUpStatus, quoteSentAt } = est;
+  if (status === 'rejected' || followUpStatus === 'lost') return null;
+  if (followUpStatus === 'won' && invs.every(i => i.status === 'paid')) return null;
+
+  if (status === 'draft')
+    return { icon: '✏️', label: 'Finalize Estimate', subtitle: 'Review answers and calculate the price range', action: 'edit' };
+  if (status === 'pending' && !quoteSentAt)
+    return { icon: '📤', label: 'Send Quote', subtitle: 'Email the estimate to your customer', action: 'send' };
+  if (followUpStatus === 'follow_up_due')
+    return { icon: '📞', label: 'Follow Up Now', subtitle: "Customer hasn't responded — follow up today", action: 'followUp', urgent: true };
+  if (followUpStatus === 'quote_sent' || (quoteSentAt && status === 'pending'))
+    return { icon: '📞', label: 'Follow Up', subtitle: 'Check in with the customer about your quote', action: 'followUp' };
+  if (followUpStatus === 'awaiting_customer')
+    return { icon: '⏳', label: 'Waiting on Customer', subtitle: 'Follow up if no response soon', action: 'followUp' };
+  if (status === 'accepted') {
+    if (invs.length === 0)
+      return { icon: '🧾', label: 'Create Invoice', subtitle: 'Job approved — time to send an invoice', action: 'invoice' };
+    const draftInv = invs.find(i => i.status === 'draft');
+    if (draftInv)
+      return { icon: '🧾', label: 'Send Invoice', subtitle: 'Invoice created but not sent yet', action: 'viewInvoice', invoiceId: draftInv.id };
+    const sentInv = invs.find(i => i.status === 'sent');
+    if (sentInv)
+      return { icon: '💰', label: 'Collect Payment', subtitle: 'Invoice sent — record payment when received', action: 'viewInvoice', invoiceId: sentInv.id };
+  }
+  return null;
+}
+
+// ─── Lifecycle summary ─────────────────────────────────────────────────────────
+function buildLifecycleSummary(est: Estimate, invs: Invoice[]): string {
+  const fmt = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const parts: string[] = ['Created ' + fmt(est.createdAt)];
+  if (est.quoteSentAt) parts.push('Sent ' + fmt(est.quoteSentAt));
+  if (invs.length > 0) {
+    const inv = invs[0];
+    parts.push(`${inv.invoiceNumber} ${inv.status}`);
+    if (inv.amountPaid) parts.push(`$${inv.amountPaid.toLocaleString('en-US')} paid`);
+  }
+  return parts.join(' · ');
+}
 
 const STATUS_STYLE: Record<string, { bg: string; border: string; text: string; label: string }> = {
   draft:    { bg: T.surface,  border: T.border, text: T.sub,     label: 'Draft' },
@@ -131,6 +206,22 @@ export function EstimateDetailScreen({ route, navigation }: any) {
 
   const { computedRange: range, customer } = estimate;
   const hasOverrides = Object.keys(estimate.driverOverrides ?? {}).length > 0;
+  const vertical = ALL_VERTICALS.find(v => v.id === estimate.verticalId);
+  const service  = vertical?.services.find(s => s.id === estimate.serviceId);
+  const jobStage = deriveJobStage(estimate);
+  const nextAction = deriveNextAction(estimate, invoices);
+  const lifecycleSummary = buildLifecycleSummary(estimate, invoices);
+
+  const handleNextAction = () => {
+    if (!nextAction) return;
+    switch (nextAction.action) {
+      case 'edit':       navigation.navigate('NewEstimate', { estimateId: estimate.id }); break;
+      case 'send':       handleSendEstimate(); break;
+      case 'followUp':   setCommIntent('follow_up'); setShowComm(true); break;
+      case 'invoice':    handleCreateInvoice(); break;
+      case 'viewInvoice': navigation.navigate('Invoice', { invoiceId: nextAction.invoiceId }); break;
+    }
+  };
   const materialsTotal = (estimate.materialLineItems ?? []).reduce((s, m) => s + m.unitCost * m.quantity, 0);
   const priceMin = (range?.min ?? 0) + materialsTotal;
   const priceMax = (range?.max ?? 0) + materialsTotal;
@@ -280,27 +371,54 @@ export function EstimateDetailScreen({ route, navigation }: any) {
         {/* Header card */}
         <View style={s.headerCard}>
           <View style={s.headerTop}>
-            <StatusBadge status={estimate.status} />
+            <View style={[s.stageBadge, { backgroundColor: jobStage.bgColor, borderColor: jobStage.color + '88' }]}>
+              <Text style={[s.stageBadgeTxt, { color: jobStage.color }]}>{jobStage.label}</Text>
+            </View>
             {estimate.estimateNumber && <Text style={s.estNum}>{estimate.estimateNumber}</Text>}
           </View>
           <Text style={s.customerName}>{customer?.name ?? '—'}</Text>
+          {vertical && service && (
+            <Text style={s.serviceLabel}>{vertical.name} · {service.name}</Text>
+          )}
           {customer?.address && <Text style={s.customerSub}>{customer.address}</Text>}
           {customer?.phone && <Text style={s.customerSub}>{customer.phone}</Text>}
-          {((estimate.photos?.length ?? 0) > 0 || aiHistory.length > 0) && (
-            <View style={s.headerBadges}>
-              {(estimate.photos?.length ?? 0) > 0 && (
-                <View style={s.badge}>
-                  <Text style={s.badgeTxt}>📸 {estimate.photos!.length} photo{estimate.photos!.length !== 1 ? 's' : ''}</Text>
-                </View>
-              )}
-              {aiHistory.length > 0 && (
-                <View style={[s.badge, s.badgeAi]}>
-                  <Text style={[s.badgeTxt, s.badgeTxtAi]}>🤖 {aiHistory.length} AI scan{aiHistory.length !== 1 ? 's' : ''}</Text>
-                </View>
-              )}
-            </View>
-          )}
+          <View style={s.headerBadges}>
+            {estimate.quoteSentAt && (
+              <View style={[s.badge, { backgroundColor: T.tealLo, borderColor: T.teal }]}>
+                <Text style={[s.badgeTxt, { color: T.teal }]}>Sent {new Date(estimate.quoteSentAt).toLocaleDateString()}</Text>
+              </View>
+            )}
+            {(estimate.photos?.length ?? 0) > 0 && (
+              <View style={s.badge}>
+                <Text style={s.badgeTxt}>📸 {estimate.photos!.length} photo{estimate.photos!.length !== 1 ? 's' : ''}</Text>
+              </View>
+            )}
+            {aiHistory.length > 0 && (
+              <View style={[s.badge, s.badgeAi]}>
+                <Text style={[s.badgeTxt, s.badgeTxtAi]}>🤖 {aiHistory.length} AI scan{aiHistory.length !== 1 ? 's' : ''}</Text>
+              </View>
+            )}
+          </View>
         </View>
+
+        {/* Lifecycle summary */}
+        <Text style={s.lifecycleSummary}>{lifecycleSummary}</Text>
+
+        {/* Next Action */}
+        {nextAction && (
+          <TouchableOpacity
+            style={[s.nextActionCard, nextAction.urgent && s.nextActionCardUrgent]}
+            onPress={handleNextAction}
+            disabled={saving || generatingPdf}
+          >
+            <Text style={s.nextActionIcon}>{nextAction.icon}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.nextActionLabel, nextAction.urgent && { color: T.red }]}>{nextAction.label}</Text>
+              <Text style={s.nextActionSub}>{nextAction.subtitle}</Text>
+            </View>
+            <Text style={[s.nextActionArrow, nextAction.urgent && { color: T.red }]}>→</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Price range */}
         <SectionHeader title="Estimated Range" />
@@ -416,6 +534,9 @@ export function EstimateDetailScreen({ route, navigation }: any) {
                   <Text style={s.invoiceNum}>{inv.invoiceNumber}</Text>
                   <Text style={s.invoiceSub}>{inv.status.charAt(0).toUpperCase() + inv.status.slice(1)} · {inv.paymentTerms}</Text>
                 </View>
+                {inv.totalAmount != null && (
+                  <Text style={s.invoiceAmt}>${inv.totalAmount.toLocaleString('en-US')}</Text>
+                )}
                 <Text style={s.invoiceArrow}>›</Text>
               </TouchableOpacity>
             ))}
@@ -430,41 +551,25 @@ export function EstimateDetailScreen({ route, navigation }: any) {
           </>
         )}
 
-        {/* Next step hint */}
-        {estimate.status === 'draft' && (
-          <View style={s.nextStepCard}>
-            <Text style={s.nextStepIcon}>💡</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={s.nextStepTitle}>Next: Review and finalize</Text>
-              <Text style={s.nextStepSub}>Edit the estimate if needed, then send it to your customer or create an invoice.</Text>
-            </View>
-          </View>
-        )}
-        {estimate.status === 'pending' && invoices.length === 0 && (
-          <View style={s.nextStepCard}>
-            <Text style={s.nextStepIcon}>💡</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={s.nextStepTitle}>Next: Send to customer or create invoice</Text>
-              <Text style={s.nextStepSub}>Use "Review & Send" to email the estimate, or "Create Invoice" when the job is accepted.</Text>
-            </View>
-          </View>
-        )}
-        {(estimate.followUpStatus === 'quote_sent' || estimate.followUpStatus === 'follow_up_due') && (
-          <View style={s.nextStepCard}>
-            <Text style={s.nextStepIcon}>📞</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={s.nextStepTitle}>Follow up with {estimate.customer?.name ?? 'customer'}</Text>
-              <Text style={s.nextStepSub}>Schedule a reminder or send a follow-up message using the buttons below.</Text>
-            </View>
-          </View>
-        )}
-
         {/* Actions */}
         <SectionHeader title="Actions" />
         <View style={s.actions}>
           <TouchableOpacity style={s.actionBtn} onPress={() => navigation.navigate('NewEstimate', { estimateId: estimate.id })}>
             <Text style={s.actionIcon}>✏️</Text>
-            <Text style={s.actionTxt}>Edit Estimate</Text>
+            <Text style={s.actionTxt}>Edit Job</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.actionBtn} onPress={handleSendEstimate} disabled={generatingPdf}>
+            {generatingPdf ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.actionIcon}>📤</Text>}
+            <View style={{ flex: 1 }}>
+              <Text style={s.actionTxt}>Send Quote</Text>
+              {!estimate.customer?.email && (
+                <Text style={s.actionHint}>No email on file — you can enter one when sending</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={s.actionBtn} onPress={handleCreateInvoice} disabled={saving}>
+            {saving ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.actionIcon}>🧾</Text>}
+            <Text style={s.actionTxt}>Create Invoice</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={s.actionBtn}
@@ -475,19 +580,6 @@ export function EstimateDetailScreen({ route, navigation }: any) {
               <Text style={s.actionTxt}>Site Photos / AI Analysis</Text>
               {(estimate.photos?.length ?? 0) > 0 && (
                 <Text style={s.actionHint}>{estimate.photos!.length} photo{estimate.photos!.length !== 1 ? 's' : ''} attached</Text>
-              )}
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={s.actionBtn} onPress={handleCreateInvoice} disabled={saving}>
-            {saving ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.actionIcon}>🧾</Text>}
-            <Text style={s.actionTxt}>Create Invoice</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={s.actionBtn} onPress={handleSendEstimate} disabled={generatingPdf}>
-            {generatingPdf ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.actionIcon}>📤</Text>}
-            <View style={{ flex: 1 }}>
-              <Text style={s.actionTxt}>Send Estimate</Text>
-              {!estimate.customer?.email && (
-                <Text style={s.actionHint}>No email on file — you can enter one when sending</Text>
               )}
             </View>
           </TouchableOpacity>
@@ -544,8 +636,11 @@ const s = StyleSheet.create({
 
   headerCard: { backgroundColor: T.surface, borderRadius: radii.lg, padding: 18, borderWidth: 1, borderColor: T.border },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  stageBadge: { borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1 },
+  stageBadgeTxt: { fontSize: 12, fontWeight: '700' },
   estNum: { color: T.sub, fontSize: 12 },
   customerName: { color: T.text, fontSize: 22, fontWeight: '700' },
+  serviceLabel: { color: T.textDim, fontSize: 13, fontWeight: '500', marginTop: 2 },
   customerSub: { color: T.sub, fontSize: 13, marginTop: 3 },
   headerBadges: { flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap' },
   badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
@@ -571,12 +666,16 @@ const s = StyleSheet.create({
   invoiceRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.surface, borderRadius: radii.md, padding: 14, borderWidth: 1, borderColor: T.border, marginBottom: 8 },
   invoiceNum: { color: T.text, fontSize: 15, fontWeight: '600' },
   invoiceSub: { color: T.sub, fontSize: 12, marginTop: 2 },
+  invoiceAmt: { color: T.text, fontSize: 14, fontWeight: '700', marginRight: 8 },
   invoiceArrow: { color: T.sub, fontSize: 20 },
 
-  nextStepCard: { flexDirection: 'row', gap: 10, backgroundColor: T.accentLo, borderRadius: radii.lg, padding: 14, borderWidth: 1, borderColor: T.accent + '44', marginTop: 16 },
-  nextStepIcon: { fontSize: 18, marginTop: 1 },
-  nextStepTitle: { color: T.text, fontSize: 14, fontWeight: '700' },
-  nextStepSub: { color: T.sub, fontSize: 12, marginTop: 2, lineHeight: 17 },
+  lifecycleSummary: { color: T.sub, fontSize: 12, marginTop: 10, marginBottom: 2, paddingHorizontal: 2 },
+  nextActionCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: T.accentLo, borderRadius: radii.lg, padding: 16, borderWidth: 1, borderColor: T.accent + '55', marginTop: 10 },
+  nextActionCardUrgent: { backgroundColor: T.redLo, borderColor: T.red + '55' },
+  nextActionIcon: { fontSize: 22 },
+  nextActionLabel: { color: T.text, fontSize: 15, fontWeight: '700' },
+  nextActionSub: { color: T.sub, fontSize: 12, marginTop: 2 },
+  nextActionArrow: { color: T.accent, fontSize: 18, fontWeight: '700' },
 
   actions: { gap: 10 },
   actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: T.surface, borderRadius: radii.md, padding: 16, borderWidth: 1, borderColor: T.border },

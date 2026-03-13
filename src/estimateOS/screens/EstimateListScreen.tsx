@@ -8,13 +8,32 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Estimate } from '../models/types';
 import { EstimateRepository } from '../storage/repository';
+import { ALL_VERTICALS } from '../config/verticals';
 import { T, radii } from '../theme';
 
-const STATUS_COLOR: Record<string, string> = {
-  draft:    T.sub,
-  pending:  T.amber,
-  accepted: T.green,
-  rejected: T.red,
+function deriveJobStageLabel(est: Estimate): string {
+  const { status, followUpStatus, quoteSentAt } = est;
+  if (followUpStatus === 'won')                                    return 'Won';
+  if (followUpStatus === 'lost' || status === 'rejected')          return 'Lost';
+  if (status === 'accepted')                                       return 'Approved';
+  if (followUpStatus === 'follow_up_due')                          return 'Follow-up Due';
+  if (followUpStatus === 'awaiting_customer')                      return 'Awaiting';
+  if (followUpStatus === 'appointment_scheduled')                  return 'Appt. Scheduled';
+  if (followUpStatus === 'quote_sent' || quoteSentAt)              return 'Quote Sent';
+  if (status === 'pending')                                        return 'Priced';
+  return 'In Progress';
+}
+
+const STAGE_COLOR: Record<string, string> = {
+  'Won':              T.green,
+  'Approved':         T.green,
+  'Lost':             T.red,
+  'Follow-up Due':    T.red,
+  'Awaiting':         T.amber,
+  'Appt. Scheduled':  T.purple,
+  'Quote Sent':       T.teal,
+  'Priced':           T.amber,
+  'In Progress':      T.sub,
 };
 
 export function EstimateListScreen({ navigation }: any) {
@@ -47,12 +66,12 @@ export function EstimateListScreen({ navigation }: any) {
           ListEmptyComponent={
             <View style={s.empty}>
               <Text style={s.emptyIcon}>📝</Text>
-              <Text style={s.emptyTitle}>No estimates yet</Text>
+              <Text style={s.emptyTitle}>No jobs yet</Text>
               <Text style={s.emptySub}>
-                Create your first estimate — pick a service, answer a few{'\n'}questions, and get a price range instantly.
+                Capture a lead, pick a service, and get a{'\n'}price range in minutes.
               </Text>
               <TouchableOpacity style={s.emptyBtn} onPress={() => navigation.navigate('NewEstimate')}>
-                <Text style={s.emptyBtnTxt}>+ Create First Estimate</Text>
+                <Text style={s.emptyBtnTxt}>+ New Job</Text>
               </TouchableOpacity>
             </View>
           }
@@ -60,6 +79,11 @@ export function EstimateListScreen({ navigation }: any) {
             const min = est.computedRange?.min ?? 0;
             const max = est.computedRange?.max ?? 0;
             const date = new Date(est.updatedAt);
+            const vertical = ALL_VERTICALS.find(v => v.id === est.verticalId);
+            const service  = vertical?.services.find(s => s.id === est.serviceId);
+            const stageLabel = deriveJobStageLabel(est);
+            const stageColor = STAGE_COLOR[stageLabel] ?? T.sub;
+            const isFollowUpDue = est.followUpStatus === 'follow_up_due';
             return (
               <TouchableOpacity
                 style={s.row}
@@ -67,8 +91,8 @@ export function EstimateListScreen({ navigation }: any) {
               >
                 <View style={s.rowLeft}>
                   <Text style={s.customerName}>{est.customer.name}</Text>
-                  {est.estimateNumber && (
-                    <Text style={s.estNum}>{est.estimateNumber}</Text>
+                  {service && (
+                    <Text style={s.serviceLabel}>{service.name}</Text>
                   )}
                   <Text style={s.dateText}>{date.toLocaleDateString()}</Text>
                 </View>
@@ -76,9 +100,14 @@ export function EstimateListScreen({ navigation }: any) {
                   <Text style={s.range}>
                     ${min.toLocaleString('en-US')}–${max.toLocaleString('en-US')}
                   </Text>
-                  <Text style={[s.status, { color: STATUS_COLOR[est.status] ?? T.sub }]}>
-                    {est.status}
-                  </Text>
+                  <View style={s.statusRow}>
+                    {isFollowUpDue && (
+                      <View style={s.urgencyPill}>
+                        <Text style={s.urgencyTxt}>Follow-up</Text>
+                      </View>
+                    )}
+                    <Text style={[s.status, { color: stageColor }]}>{stageLabel}</Text>
+                  </View>
                 </View>
                 <Text style={s.arrow}>›</Text>
               </TouchableOpacity>
@@ -109,11 +138,14 @@ const s = StyleSheet.create({
   },
   rowLeft: { flex: 1 },
   customerName: { color: T.text, fontSize: 15, fontWeight: '600' },
-  estNum: { color: T.sub, fontSize: 12, marginTop: 2 },
+  serviceLabel: { color: T.textDim, fontSize: 12, marginTop: 2 },
   dateText: { color: T.muted, fontSize: 11, marginTop: 2 },
   rowRight: { alignItems: 'flex-end' },
   range: { color: T.accent, fontSize: 13, fontWeight: '700' },
-  status: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize', marginTop: 3 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 3 },
+  status: { fontSize: 11, fontWeight: '600' },
+  urgencyPill: { backgroundColor: T.redLo, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 2, borderWidth: 1, borderColor: T.red },
+  urgencyTxt: { color: T.red, fontSize: 10, fontWeight: '700' },
   arrow: { color: T.sub, fontSize: 20 },
   fab: {
     position: 'absolute', bottom: 24, right: 20,

@@ -32,7 +32,7 @@ const FU_COLOR: Record<FollowUpStatus, { bg: string; border: string; text: strin
 };
 
 type NeedsAttentionItem =
-  | { kind: 'estimate'; estimate: Estimate; reason: string }
+  | { kind: 'estimate'; estimate: Estimate; reason: string; dotBg?: string; dotBorder?: string }
   | { kind: 'invoice'; invoice: Invoice; reason: string }
   | { kind: 'reminder'; reminder: Reminder; reason: string }
   | { kind: 'intake'; draft: IntakeDraft; reason: string };
@@ -138,7 +138,8 @@ export function OperationsDashboardScreen({ navigation }: any) {
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
 
-  const openEstimates = estimates.filter(e => e.status === 'draft' || e.status === 'pending');
+  const openEstimates   = estimates.filter(e => e.status === 'draft' || e.status === 'pending');
+  const quotesNotSent   = estimates.filter(e => e.status === 'pending' && !e.quoteSentAt);
   const sentEstimates = estimates.filter(e => e.followUpStatus === 'quote_sent');
   const wonEstimates  = estimates.filter(e => e.followUpStatus === 'won');
   const outstandingInvoices = invoices.filter(i => i.status === 'sent');
@@ -175,6 +176,11 @@ export function OperationsDashboardScreen({ navigation }: any) {
     needsAttention.push({ kind: 'estimate', estimate: e, reason: 'Follow-up overdue' })
   );
 
+  // Priced quotes that were never sent to the customer
+  quotesNotSent.slice(0, 3).forEach(e =>
+    needsAttention.push({ kind: 'estimate', estimate: e, reason: 'Quote not sent yet', dotBg: T.amberLo, dotBorder: T.amber })
+  );
+
   // Unsent invoices (draft, no send)
   invoices.filter(i => i.status === 'draft').slice(0, 3).forEach(i =>
     needsAttention.push({ kind: 'invoice', invoice: i, reason: 'Invoice not sent yet' })
@@ -208,7 +214,7 @@ export function OperationsDashboardScreen({ navigation }: any) {
           </TouchableOpacity>
           <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('NewEstimate')}>
             <Text style={s.quickIcon}>📝</Text>
-            <Text style={s.quickTxt}>New Estimate</Text>
+            <Text style={s.quickTxt}>New Job</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('CustomersTab')}>
             <Text style={s.quickIcon}>👥</Text>
@@ -219,7 +225,7 @@ export function OperationsDashboardScreen({ navigation }: any) {
         {/* Summary stats */}
         <SectionHeader title="Overview" />
         <View style={s.statRow}>
-          <StatCard label="Open Estimates" value={openEstimates.length} color={openEstimates.length > 0 ? T.amber : undefined} />
+          <StatCard label="Open Jobs" value={openEstimates.length} color={openEstimates.length > 0 ? T.amber : undefined} />
           <StatCard label="Follow-ups Due" value={followUpsDue.length} color={followUpsDue.length > 0 ? T.red : undefined} />
           <StatCard label="Invoices Out" value={outstandingInvoices.length} color={outstandingInvoices.length > 0 ? T.accent : undefined} />
         </View>
@@ -291,7 +297,7 @@ export function OperationsDashboardScreen({ navigation }: any) {
               if (item.kind === 'estimate') {
                 return (
                   <TouchableOpacity key={i} style={s.attentionRow} onPress={() => navigation.navigate('EstimateDetail', { estimateId: item.estimate.id })}>
-                    <View style={[s.attentionDot, { backgroundColor: T.redLo, borderColor: T.red }]}>
+                    <View style={[s.attentionDot, { backgroundColor: item.dotBg ?? T.redLo, borderColor: item.dotBorder ?? T.red }]}>
                       <Text style={{ fontSize: 12 }}>📋</Text>
                     </View>
                     <View style={{ flex: 1 }}>
