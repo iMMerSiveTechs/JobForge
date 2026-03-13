@@ -208,7 +208,7 @@ export function OperationsDashboardScreen({ navigation }: any) {
           </TouchableOpacity>
           <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('NewEstimate')}>
             <Text style={s.quickIcon}>📝</Text>
-            <Text style={s.quickTxt}>New Estimate</Text>
+            <Text style={s.quickTxt}>New Job</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('CustomersTab')}>
             <Text style={s.quickIcon}>👥</Text>

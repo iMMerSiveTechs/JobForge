@@ -464,7 +464,7 @@ export function EstimateDetailScreen({ route, navigation }: any) {
         <View style={s.actions}>
           <TouchableOpacity style={s.actionBtn} onPress={() => navigation.navigate('NewEstimate', { estimateId: estimate.id })}>
             <Text style={s.actionIcon}>✏️</Text>
-            <Text style={s.actionTxt}>Edit Estimate</Text>
+            <Text style={s.actionTxt}>Edit Job</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={s.actionBtn}
@@ -485,7 +485,7 @@ export function EstimateDetailScreen({ route, navigation }: any) {
           <TouchableOpacity style={s.actionBtn} onPress={handleSendEstimate} disabled={generatingPdf}>
             {generatingPdf ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.actionIcon}>📤</Text>}
             <View style={{ flex: 1 }}>
-              <Text style={s.actionTxt}>Send Estimate</Text>
+              <Text style={s.actionTxt}>Send Quote</Text>
               {!estimate.customer?.email && (
                 <Text style={s.actionHint}>No email on file — you can enter one when sending</Text>
               )}
