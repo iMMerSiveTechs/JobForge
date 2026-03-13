@@ -47,12 +47,12 @@ export function EstimateListScreen({ navigation }: any) {
           ListEmptyComponent={
             <View style={s.empty}>
               <Text style={s.emptyIcon}>📝</Text>
-              <Text style={s.emptyTitle}>No estimates yet</Text>
+              <Text style={s.emptyTitle}>No jobs yet</Text>
               <Text style={s.emptySub}>
-                Create your first estimate — pick a service, answer a few{'\n'}questions, and get a price range instantly.
+                Capture a lead, pick a service, and get a{'\n'}price range in minutes.
               </Text>
               <TouchableOpacity style={s.emptyBtn} onPress={() => navigation.navigate('NewEstimate')}>
-                <Text style={s.emptyBtnTxt}>+ Create First Estimate</Text>
+                <Text style={s.emptyBtnTxt}>+ New Job</Text>
               </TouchableOpacity>
             </View>
           }

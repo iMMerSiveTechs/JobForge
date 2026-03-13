@@ -139,7 +139,7 @@ function EstimatesStack() {
       <Stack.Screen
         name="EstimateList"
         component={EstimateListScreen}
-        options={{ title: 'Estimates' }}
+        options={{ title: 'Jobs' }}
       />
       <Stack.Screen name="NewEstimate"       component={NewEstimateScreen}       options={{ title: 'New Estimate'  }} />
       <Stack.Screen name="EstimateDetail"    component={EstimateDetailScreen}    options={{ title: 'Estimate'      }} />

@@ -219,7 +219,7 @@ export function OperationsDashboardScreen({ navigation }: any) {
         {/* Summary stats */}
         <SectionHeader title="Overview" />
         <View style={s.statRow}>
-          <StatCard label="Open Estimates" value={openEstimates.length} color={openEstimates.length > 0 ? T.amber : undefined} />
+          <StatCard label="Open Jobs" value={openEstimates.length} color={openEstimates.length > 0 ? T.amber : undefined} />
           <StatCard label="Follow-ups Due" value={followUpsDue.length} color={followUpsDue.length > 0 ? T.red : undefined} />
           <StatCard label="Invoices Out" value={outstandingInvoices.length} color={outstandingInvoices.length > 0 ? T.accent : undefined} />
         </View>
