@@ -19,6 +19,30 @@ import { CommReviewModal } from '../components/CommReviewModal';
 import { generateEstimatePdf, sharePdf } from '../services/pdfService';
 import { intentToTimelineEvent } from '../services/commProvider';
 import { T, radii } from '../theme';
+import { ALL_VERTICALS } from '../config/verticals';
+
+// ─── Derived lifecycle stage ───────────────────────────────────────────────────
+// Pure function — no I/O. Derives a human-readable job stage from existing fields.
+function deriveJobStage(est: Estimate): { label: string; color: string; bgColor: string } {
+  const { status, followUpStatus, quoteSentAt } = est;
+  if (followUpStatus === 'won')
+    return { label: 'Won',             color: T.greenHi,  bgColor: T.greenLo };
+  if (followUpStatus === 'lost' || status === 'rejected')
+    return { label: 'Lost',            color: T.red,      bgColor: T.redLo };
+  if (status === 'accepted')
+    return { label: 'Approved',        color: T.greenHi,  bgColor: T.greenLo };
+  if (followUpStatus === 'follow_up_due')
+    return { label: 'Follow-up Due',   color: T.red,      bgColor: T.redLo };
+  if (followUpStatus === 'awaiting_customer')
+    return { label: 'Awaiting',        color: T.amberHi,  bgColor: T.amberLo };
+  if (followUpStatus === 'appointment_scheduled')
+    return { label: 'Appt. Scheduled', color: T.purple,   bgColor: T.purpleLo };
+  if (followUpStatus === 'quote_sent' || quoteSentAt)
+    return { label: 'Quote Sent',      color: T.teal,     bgColor: T.tealLo };
+  if (status === 'pending')
+    return { label: 'Priced',          color: T.amberHi,  bgColor: T.amberLo };
+  return   { label: 'In Progress',     color: T.sub,      bgColor: T.surface };
+}
 
 const STATUS_STYLE: Record<string, { bg: string; border: string; text: string; label: string }> = {
   draft:    { bg: T.surface,  border: T.border, text: T.sub,     label: 'Draft' },
@@ -131,6 +155,9 @@ export function EstimateDetailScreen({ route, navigation }: any) {
 
   const { computedRange: range, customer } = estimate;
   const hasOverrides = Object.keys(estimate.driverOverrides ?? {}).length > 0;
+  const vertical = ALL_VERTICALS.find(v => v.id === estimate.verticalId);
+  const service  = vertical?.services.find(s => s.id === estimate.serviceId);
+  const jobStage = deriveJobStage(estimate);
   const materialsTotal = (estimate.materialLineItems ?? []).reduce((s, m) => s + m.unitCost * m.quantity, 0);
   const priceMin = (range?.min ?? 0) + materialsTotal;
   const priceMax = (range?.max ?? 0) + materialsTotal;
@@ -280,26 +307,34 @@ export function EstimateDetailScreen({ route, navigation }: any) {
         {/* Header card */}
         <View style={s.headerCard}>
           <View style={s.headerTop}>
-            <StatusBadge status={estimate.status} />
+            <View style={[s.stageBadge, { backgroundColor: jobStage.bgColor, borderColor: jobStage.color + '88' }]}>
+              <Text style={[s.stageBadgeTxt, { color: jobStage.color }]}>{jobStage.label}</Text>
+            </View>
             {estimate.estimateNumber && <Text style={s.estNum}>{estimate.estimateNumber}</Text>}
           </View>
           <Text style={s.customerName}>{customer?.name ?? '—'}</Text>
+          {vertical && service && (
+            <Text style={s.serviceLabel}>{vertical.name} · {service.name}</Text>
+          )}
           {customer?.address && <Text style={s.customerSub}>{customer.address}</Text>}
           {customer?.phone && <Text style={s.customerSub}>{customer.phone}</Text>}
-          {((estimate.photos?.length ?? 0) > 0 || aiHistory.length > 0) && (
-            <View style={s.headerBadges}>
-              {(estimate.photos?.length ?? 0) > 0 && (
-                <View style={s.badge}>
-                  <Text style={s.badgeTxt}>📸 {estimate.photos!.length} photo{estimate.photos!.length !== 1 ? 's' : ''}</Text>
-                </View>
-              )}
-              {aiHistory.length > 0 && (
-                <View style={[s.badge, s.badgeAi]}>
-                  <Text style={[s.badgeTxt, s.badgeTxtAi]}>🤖 {aiHistory.length} AI scan{aiHistory.length !== 1 ? 's' : ''}</Text>
-                </View>
-              )}
-            </View>
-          )}
+          <View style={s.headerBadges}>
+            {estimate.quoteSentAt && (
+              <View style={[s.badge, { backgroundColor: T.tealLo, borderColor: T.teal }]}>
+                <Text style={[s.badgeTxt, { color: T.teal }]}>Sent {new Date(estimate.quoteSentAt).toLocaleDateString()}</Text>
+              </View>
+            )}
+            {(estimate.photos?.length ?? 0) > 0 && (
+              <View style={s.badge}>
+                <Text style={s.badgeTxt}>📸 {estimate.photos!.length} photo{estimate.photos!.length !== 1 ? 's' : ''}</Text>
+              </View>
+            )}
+            {aiHistory.length > 0 && (
+              <View style={[s.badge, s.badgeAi]}>
+                <Text style={[s.badgeTxt, s.badgeTxtAi]}>🤖 {aiHistory.length} AI scan{aiHistory.length !== 1 ? 's' : ''}</Text>
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Price range */}
@@ -416,6 +451,9 @@ export function EstimateDetailScreen({ route, navigation }: any) {
                   <Text style={s.invoiceNum}>{inv.invoiceNumber}</Text>
                   <Text style={s.invoiceSub}>{inv.status.charAt(0).toUpperCase() + inv.status.slice(1)} · {inv.paymentTerms}</Text>
                 </View>
+                {inv.totalAmount != null && (
+                  <Text style={s.invoiceAmt}>${inv.totalAmount.toLocaleString('en-US')}</Text>
+                )}
                 <Text style={s.invoiceArrow}>›</Text>
               </TouchableOpacity>
             ))}
@@ -544,8 +582,11 @@ const s = StyleSheet.create({
 
   headerCard: { backgroundColor: T.surface, borderRadius: radii.lg, padding: 18, borderWidth: 1, borderColor: T.border },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  stageBadge: { borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1 },
+  stageBadgeTxt: { fontSize: 12, fontWeight: '700' },
   estNum: { color: T.sub, fontSize: 12 },
   customerName: { color: T.text, fontSize: 22, fontWeight: '700' },
+  serviceLabel: { color: T.textDim, fontSize: 13, fontWeight: '500', marginTop: 2 },
   customerSub: { color: T.sub, fontSize: 13, marginTop: 3 },
   headerBadges: { flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap' },
   badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.surface, borderWidth: 1, borderColor: T.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
@@ -571,6 +612,7 @@ const s = StyleSheet.create({
   invoiceRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: T.surface, borderRadius: radii.md, padding: 14, borderWidth: 1, borderColor: T.border, marginBottom: 8 },
   invoiceNum: { color: T.text, fontSize: 15, fontWeight: '600' },
   invoiceSub: { color: T.sub, fontSize: 12, marginTop: 2 },
+  invoiceAmt: { color: T.text, fontSize: 14, fontWeight: '700', marginRight: 8 },
   invoiceArrow: { color: T.sub, fontSize: 20 },
 
   nextStepCard: { flexDirection: 'row', gap: 10, backgroundColor: T.accentLo, borderRadius: radii.lg, padding: 14, borderWidth: 1, borderColor: T.accent + '44', marginTop: 16 },
