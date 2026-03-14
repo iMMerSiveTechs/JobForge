@@ -60,18 +60,7 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Write App Store Connect API Key
-        run: |
-          mkdir -p $HOME/private_keys
-          echo "${{ secrets.ASC_API_KEY_P8 }}" > $HOME/private_keys/AuthKey.p8
-          echo "EXPO_ASC_API_KEY_PATH=$HOME/private_keys/AuthKey.p8" >> $GITHUB_ENV
-
       - name: Build iOS on EAS (no submit — bootstrap credentials first)
-        env:
-          EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-          EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
-          EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
         run: eas build --platform ios --profile production --non-interactive
 
   # ── Full native build on manual trigger ──────────────────────────────────────
