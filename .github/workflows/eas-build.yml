@@ -61,15 +61,21 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Write App Store Connect API Key
+        if: ${{ secrets.ASC_API_KEY_P8 != '' }}
         run: |
           mkdir -p ~/private_keys
           echo "${{ secrets.ASC_API_KEY_P8 }}" > ~/private_keys/AuthKey.p8
 
-      - name: Build and submit iOS to TestFlight
+      - name: Build and submit iOS to TestFlight (with explicit ASC key)
+        if: ${{ secrets.ASC_API_KEY_P8 != '' }}
         env:
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
+        run: eas build --platform ios --profile production --auto-submit --non-interactive
+
+      - name: Build and submit iOS to TestFlight (use Expo-stored credentials)
+        if: ${{ secrets.ASC_API_KEY_P8 == '' }}
         run: eas build --platform ios --profile production --auto-submit --non-interactive
 
   # ── Full native build on manual trigger ──────────────────────────────────────
