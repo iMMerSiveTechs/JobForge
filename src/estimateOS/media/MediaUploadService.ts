@@ -20,9 +20,15 @@ export interface UploadResult {
 }
 
 function uid(): string {
-  const user = auth!.currentUser; // auth is non-null when user is signed in
+  if (!auth) throw new Error('MediaUploadService: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  const user = auth.currentUser;
   if (!user) throw new Error('MediaUploadService: user is not signed in');
   return user.uid;
+}
+
+function ensureStorage() {
+  if (!storage) throw new Error('MediaUploadService: Firebase Storage not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return storage;
 }
 
 // Convert a local file URI to a Blob for upload
@@ -60,7 +66,7 @@ export async function uploadMediaJob(
 
   const filename = filenameFromUri(uri);
   const path = storagePath(estimateId, `${job.id}_${filename}`);
-  const storageRef = ref(storage!, path);
+  const storageRef = ref(ensureStorage(), path);
 
   const blob = await uriToBlob(uri);
 

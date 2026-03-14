@@ -14,13 +14,15 @@ import { auth, db } from '../firebase/config';
 import { VerticalConfig } from '../models/types';
 
 function uid(): string {
-  const user = auth!.currentUser;
+  if (!auth) throw new Error('customVerticals: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  const user = auth.currentUser;
   if (!user) throw new Error('customVerticals: user is not signed in');
   return user.uid;
 }
 
 function verticalsCol() {
-  return collection(db!, 'users', uid(), 'customVerticals');
+  if (!db) throw new Error('customVerticals: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return collection(db, 'users', uid(), 'customVerticals');
 }
 
 export async function loadCustomVerticals(): Promise<VerticalConfig[]> {

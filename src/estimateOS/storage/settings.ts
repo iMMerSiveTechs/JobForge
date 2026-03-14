@@ -20,12 +20,16 @@ function deepStripUndefined(obj: Record<string, any>): Record<string, any> {
 }
 
 function uid(): string {
-  const user = auth!.currentUser;
+  if (!auth) throw new Error('settings: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  const user = auth.currentUser;
   if (!user) throw new Error('settings: user is not signed in');
   return user.uid;
 }
 
-function settingsRef() { return doc(db!, 'users', uid(), 'settings', 'app'); }
+function settingsRef() {
+  if (!db) throw new Error('settings: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return doc(db, 'users', uid(), 'settings', 'app');
+}
 
 export const DEFAULT_SETTINGS: AppSettings = {
   businessProfile: {

@@ -25,17 +25,23 @@ import { auth, db } from '../firebase/config';
 import { CreditBalance, AnalysisRecord, AiCreditSettings, AutoReloadSettings, AI_CREDIT_PACKS } from '../models/types';
 
 function uid(): string {
-  const user = auth!.currentUser;
+  if (!auth) throw new Error('aiCredits: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  const user = auth.currentUser;
   if (!user) throw new Error('aiCredits: user is not signed in');
   return user.uid;
 }
 
+function ensureDb() {
+  if (!db) throw new Error('aiCredits: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
 function balanceDoc() {
-  return doc(db!, 'users', uid(), 'credits', 'balance');
+  return doc(ensureDb(), 'users', uid(), 'credits', 'balance');
 }
 
 function historyCol() {
-  return collection(db!, 'users', uid(), 'analysisHistory');
+  return collection(ensureDb(), 'users', uid(), 'analysisHistory');
 }
 
 export async function getCredits(): Promise<CreditBalance> {
@@ -78,7 +84,7 @@ export async function appendAnalysisRecord(
 // ─── Credit settings (auto-reload) ───────────────────────────────────────────
 
 function settingsDoc() {
-  return doc(db!, 'users', uid(), 'credits', 'settings');
+  return doc(ensureDb(), 'users', uid(), 'credits', 'settings');
 }
 
 export const DEFAULT_AUTO_RELOAD: AutoReloadSettings = {

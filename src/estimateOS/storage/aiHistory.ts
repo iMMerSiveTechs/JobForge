@@ -17,13 +17,19 @@ import { AiScanRecord } from '../models/types';
 export type { AiScanRecord };
 
 function uid(): string {
-  const user = auth!.currentUser;
+  if (!auth) throw new Error('aiHistory: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  const user = auth.currentUser;
   if (!user) throw new Error('aiHistory: user is not signed in');
   return user.uid;
 }
 
+function ensureDb() {
+  if (!db) throw new Error('aiHistory: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
 function recordsCol(estimateId: string) {
-  return collection(db!, 'users', uid(), 'aiHistory', estimateId, 'records');
+  return collection(ensureDb(), 'users', uid(), 'aiHistory', estimateId, 'records');
 }
 
 function deserialize(id: string, data: Record<string, any>): AiScanRecord {

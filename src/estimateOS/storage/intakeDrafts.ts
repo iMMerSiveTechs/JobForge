@@ -10,13 +10,19 @@ import { IntakeDraft } from '../models/types';
 import { makeId } from '../domain/id';
 
 function uid(): string {
-  const user = auth!.currentUser;
+  if (!auth) throw new Error('intakeDrafts: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  const user = auth.currentUser;
   if (!user) throw new Error('intakeDrafts: user is not signed in');
   return user.uid;
 }
 
-function intakeCol() { return collection(db!, 'users', uid(), 'intakeDrafts'); }
-function intakeRef(id: string) { return doc(db!, 'users', uid(), 'intakeDrafts', id); }
+function ensureDb() {
+  if (!db) throw new Error('intakeDrafts: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
+function intakeCol() { return collection(ensureDb(), 'users', uid(), 'intakeDrafts'); }
+function intakeRef(id: string) { return doc(ensureDb(), 'users', uid(), 'intakeDrafts', id); }
 
 function ts(v: any): string {
   return v instanceof Timestamp ? v.toDate().toISOString() : (v ?? new Date().toISOString());

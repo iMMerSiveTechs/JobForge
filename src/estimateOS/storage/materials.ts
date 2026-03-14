@@ -9,13 +9,19 @@ import { auth, db } from '../firebase/config';
 import { Material } from '../models/types';
 
 function uid(): string {
-  const user = auth!.currentUser;
+  if (!auth) throw new Error('MaterialRepository: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  const user = auth.currentUser;
   if (!user) throw new Error('MaterialRepository: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db!, 'users', uid(), 'materials'); }
-function ref(id: string) { return doc(db!, 'users', uid(), 'materials', id); }
+function ensureDb() {
+  if (!db) throw new Error('MaterialRepository: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
+function col() { return collection(ensureDb(), 'users', uid(), 'materials'); }
+function ref(id: string) { return doc(ensureDb(), 'users', uid(), 'materials', id); }
 
 function deserialize(data: Record<string, any>): Material {
   const ts = (v: any) =>

@@ -179,7 +179,9 @@ export function NewEstimateScreen({ route, navigation }: any) {
 
   // Load verticals, then optionally load existing estimate for edit mode
   useEffect(() => {
-    loadCustomVerticals().then((custom) => {
+    loadCustomVerticals()
+      .catch(() => [] as VerticalConfig[])
+      .then((custom) => {
       const merged = mergeVerticals(ALL_VERTICALS, custom);
       setVerticals(merged);
 

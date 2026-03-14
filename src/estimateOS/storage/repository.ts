@@ -34,7 +34,8 @@ function deepStripUndefined(obj: Record<string, any>): Record<string, any> {
 }
 
 function uid(): string {
-  const user = auth!.currentUser;
+  if (!auth) throw new Error('EstimateRepository: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  const user = auth.currentUser;
   if (!user) throw new Error('EstimateRepository: user is not signed in');
   return user.uid;
 }

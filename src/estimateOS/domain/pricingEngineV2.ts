@@ -46,7 +46,7 @@ export interface PricingResultV2 {
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
 
-interface CacheKey { serviceId: string; answersHash: string; overridesHash: string; manualHash: string; }
+interface CacheKey { verticalId: string; serviceId: string; answersHash: string; overridesHash: string; manualHash: string; }
 const _cache = new Map<string, { key: CacheKey; result: PricingResultV2 }>();
 const MAX_CACHE = 20;
 
@@ -58,7 +58,7 @@ function hashObj(obj: unknown): string {
   );
 }
 function cacheKeyStr(k: CacheKey): string {
-  return `${k.serviceId}|${k.answersHash}|${k.overridesHash}|${k.manualHash}`;
+  return `${k.verticalId}|${k.serviceId}|${k.answersHash}|${k.overridesHash}|${k.manualHash}`;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -149,6 +149,7 @@ export function computePricingV2(
 ): PricingResultV2 {
   // ── Cache check ─────────────────────────────────────────────────────────────
   const cacheKey: CacheKey = {
+    verticalId:   config.id,
     serviceId:    service.id,
     answersHash:  hashObj(answers),
     overridesHash:hashObj(overrides),
