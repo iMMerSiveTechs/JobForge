@@ -1,11 +1,11 @@
-name: EAS Build
+name: EAS Build / Update
 
 on:
-  # Auto-trigger on every push to claude/ branches (AI-authored changes)
+  # OTA update on every push to claude/ branches (AI-authored changes)
   push:
     branches:
       - 'claude/**'
-  # Manual trigger for other branches/profiles
+  # Full native build on manual trigger
   workflow_dispatch:
     inputs:
       platform:
@@ -26,11 +26,19 @@ on:
           - production
           - preview
           - development
+      auto_submit:
+        description: 'Auto-submit to App Store / Play Store after build?'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 jobs:
-  # ── Auto build + submit on push to claude/* branches ─────────────────────────
-  build-auto:
-    name: EAS Build iOS (auto)
+  # ── OTA update on every push to claude/* branches ────────────────────────────
+  ota-update:
+    name: EAS Update (OTA)
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -52,10 +60,10 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build and submit iOS to TestFlight
-        run: eas build --platform ios --profile production --auto-submit --non-interactive
+      - name: Publish OTA update to production channel
+        run: eas update --channel production --message "Auto-update from ${{ github.ref_name }} @ ${{ github.sha }}" --non-interactive
 
-  # ── Manual trigger (unchanged behaviour) ─────────────────────────────────────
+  # ── Full native build on manual trigger ──────────────────────────────────────
   build-manual:
     name: EAS Build (${{ github.event.inputs.platform }})
     if: github.event_name == 'workflow_dispatch'
@@ -79,5 +87,20 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build on EAS
+      - name: Write App Store Connect API Key
+        if: github.event.inputs.auto_submit == 'true'
+        run: |
+          mkdir -p ~/private_keys
+          echo "${{ secrets.ASC_API_KEY_P8 }}" > ~/private_keys/AuthKey.p8
+
+      - name: Build on EAS (with auto-submit)
+        if: github.event.inputs.auto_submit == 'true'
+        env:
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
+        run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --auto-submit --non-interactive
+
+      - name: Build on EAS (no submit)
+        if: github.event.inputs.auto_submit == 'false'
         run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --non-interactive
