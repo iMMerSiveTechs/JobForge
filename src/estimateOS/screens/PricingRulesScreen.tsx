@@ -296,17 +296,19 @@ export function PricingRulesScreen() {
   const [presets, setPresets] = useState<QualityPreset[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const load = useCallback(async () => {
-    try {
-      const [custom, settings] = await Promise.all([loadCustomVerticals(), (async () => (await import('../storage/settings')).getSettings())()]);
-      setVerticals(mergeVerticals(ALL_VERTICALS, custom));
-      setPricingDefaults(settings.pricingDefaults);
-      setPresets(settings.presets ?? DEFAULT_SETTINGS.presets);
-    } catch {
-      // Fall back to built-in defaults so tabs render instead of spinning forever.
-      setPricingDefaults(prev => prev ?? DEFAULT_SETTINGS.pricingDefaults);
-      setPresets(prev => prev.length > 0 ? prev : DEFAULT_SETTINGS.presets);
-    }
+  const load = useCallback(() => {
+    (async () => {
+      try {
+        const [custom, settings] = await Promise.all([loadCustomVerticals(), (async () => (await import('../storage/settings')).getSettings())()]);
+        setVerticals(mergeVerticals(ALL_VERTICALS, custom));
+        setPricingDefaults(settings.pricingDefaults);
+        setPresets(settings.presets ?? DEFAULT_SETTINGS.presets);
+      } catch {
+        // Fall back to built-in defaults so tabs render instead of spinning forever.
+        setPricingDefaults(prev => prev ?? DEFAULT_SETTINGS.pricingDefaults);
+        setPresets(prev => prev.length > 0 ? prev : DEFAULT_SETTINGS.presets);
+      }
+    })();
   }, []);
 
   useFocusEffect(load);

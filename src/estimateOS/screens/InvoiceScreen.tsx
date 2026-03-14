@@ -159,18 +159,20 @@ export function InvoiceScreen({ route, navigation }: any) {
   const [pdfUri, setPdfUri] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!invoiceId) return;
-    setLoading(true);
-    try {
-      const inv = await InvoiceRepository.getInvoice(invoiceId);
-      if (inv) {
-        setInvoice(inv);
-        setTaxInput(String(Math.round(inv.taxRate * 100)));
-        setTerms(inv.paymentTerms);
-        setNotes(inv.notes ?? '');
-      }
-    } finally { setLoading(false); }
+  const load = useCallback(() => {
+    (async () => {
+      if (!invoiceId) return;
+      setLoading(true);
+      try {
+        const inv = await InvoiceRepository.getInvoice(invoiceId);
+        if (inv) {
+          setInvoice(inv);
+          setTaxInput(String(Math.round(inv.taxRate * 100)));
+          setTerms(inv.paymentTerms);
+          setNotes(inv.notes ?? '');
+        }
+      } finally { setLoading(false); }
+    })();
   }, [invoiceId]);
 
   useFocusEffect(load);

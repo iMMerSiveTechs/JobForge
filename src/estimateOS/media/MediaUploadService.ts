@@ -20,9 +20,15 @@ export interface UploadResult {
 }
 
 function uid(): string {
+  if (!auth) throw new Error('MediaUploadService: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
   const user = auth.currentUser;
   if (!user) throw new Error('MediaUploadService: user is not signed in');
   return user.uid;
+}
+
+function ensureStorage() {
+  if (!storage) throw new Error('MediaUploadService: Firebase Storage not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return storage;
 }
 
 // Convert a local file URI to a Blob for upload
@@ -55,12 +61,12 @@ export async function uploadMediaJob(
   estimateId: string,
   onProgress?: (pct: number) => void,
 ): Promise<UploadResult> {
-  const uri = job.localUri;
-  if (!uri) throw new Error(`MediaJob ${job.id} has no localUri`);
+  const uri = job.outputUri;
+  if (!uri) throw new Error(`MediaJob ${job.id} has no outputUri`);
 
   const filename = filenameFromUri(uri);
   const path = storagePath(estimateId, `${job.id}_${filename}`);
-  const storageRef = ref(storage, path);
+  const storageRef = ref(ensureStorage(), path);
 
   const blob = await uriToBlob(uri);
 
@@ -99,7 +105,7 @@ export async function uploadAllJobs(
   estimateId: string,
   onJobProgress?: (jobId: string, pct: number) => void,
 ): Promise<Map<string, UploadResult>> {
-  const readyJobs = jobs.filter((j) => j.status === 'ready' && j.localUri);
+  const readyJobs = jobs.filter((j) => j.status === 'ready' && j.outputUri);
   const results = new Map<string, UploadResult>();
 
   // Process in chunks of 3 to avoid overwhelming the network

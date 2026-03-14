@@ -10,13 +10,19 @@ import { auth, db } from '../firebase/config';
 import { ServiceTemplate } from '../models/types';
 
 function uid(): string {
+  if (!auth) throw new Error('templates: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
   const user = auth.currentUser;
   if (!user) throw new Error('templates: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db, 'users', uid(), 'templates'); }
-function ref(id: string) { return doc(db, 'users', uid(), 'templates', id); }
+function ensureDb() {
+  if (!db) throw new Error('templates: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
+function col() { return collection(ensureDb(), 'users', uid(), 'templates'); }
+function ref(id: string) { return doc(ensureDb(), 'users', uid(), 'templates', id); }
 
 function templateId(verticalId: string, serviceId: string) {
   return `${verticalId}_${serviceId}`;

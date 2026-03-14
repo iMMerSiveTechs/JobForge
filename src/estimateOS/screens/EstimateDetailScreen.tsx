@@ -178,21 +178,23 @@ export function EstimateDetailScreen({ route, navigation }: any) {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [expandedDrivers, setExpandedDrivers] = useState<Record<string, boolean>>({});
 
-  const load = useCallback(async () => {
-    if (!estimateId) return;
-    setLoading(true);
-    try {
-      const [est, invs, hist] = await Promise.all([
-        EstimateRepository.getEstimate(estimateId),
-        InvoiceRepository.listByEstimate(estimateId),
-        getAiHistory(estimateId),
-      ]);
-      setEstimate(est);
-      setInvoices(invs);
-      setAiHistory(hist);
-    } finally {
-      setLoading(false);
-    }
+  const load = useCallback(() => {
+    (async () => {
+      if (!estimateId) return;
+      setLoading(true);
+      try {
+        const [est, invs, hist] = await Promise.all([
+          EstimateRepository.getEstimate(estimateId),
+          InvoiceRepository.listByEstimate(estimateId),
+          getAiHistory(estimateId),
+        ]);
+        setEstimate(est);
+        setInvoices(invs);
+        setAiHistory(hist);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [estimateId]);
 
   useFocusEffect(load);

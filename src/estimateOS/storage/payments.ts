@@ -18,15 +18,21 @@ import {
 import { makeId } from '../domain/id';
 
 function uid(): string {
+  if (!auth) throw new Error('PaymentRepository: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
   const user = auth.currentUser;
   if (!user) throw new Error('PaymentRepository: user is not signed in');
   return user.uid;
 }
 
-function reqCol()  { return collection(db, 'users', uid(), 'paymentRequests'); }
-function reqRef(id: string) { return doc(db, 'users', uid(), 'paymentRequests', id); }
-function planCol() { return collection(db, 'users', uid(), 'paymentPlans'); }
-function planRef(id: string) { return doc(db, 'users', uid(), 'paymentPlans', id); }
+function ensureDb() {
+  if (!db) throw new Error('PaymentRepository: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
+function reqCol()  { return collection(ensureDb(), 'users', uid(), 'paymentRequests'); }
+function reqRef(id: string) { return doc(ensureDb(), 'users', uid(), 'paymentRequests', id); }
+function planCol() { return collection(ensureDb(), 'users', uid(), 'paymentPlans'); }
+function planRef(id: string) { return doc(ensureDb(), 'users', uid(), 'paymentPlans', id); }
 
 function tsStr(v: any): string {
   return v instanceof Timestamp ? v.toDate().toISOString() : (v ?? new Date().toISOString());

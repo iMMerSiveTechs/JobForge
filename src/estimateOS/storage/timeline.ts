@@ -10,12 +10,18 @@ import { TimelineEvent } from '../models/types';
 import { makeId } from '../domain/id';
 
 function uid(): string {
+  if (!auth) throw new Error('timeline: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
   const user = auth.currentUser;
   if (!user) throw new Error('timeline: user is not signed in');
   return user.uid;
 }
 
-function tlCol() { return collection(db, 'users', uid(), 'timeline'); }
+function ensureDb() {
+  if (!db) throw new Error('timeline: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
+function tlCol() { return collection(ensureDb(), 'users', uid(), 'timeline'); }
 
 function ts(v: any): string {
   return v instanceof Timestamp ? v.toDate().toISOString() : (v ?? new Date().toISOString());
@@ -43,7 +49,7 @@ export const TimelineRepository = {
     const id = makeId();
     const now = new Date().toISOString();
     const full: TimelineEvent = { ...event, id, createdAt: now };
-    await setDoc(doc(db, 'users', uid(), 'timeline', id), deepStripUndefined(full));
+    await setDoc(doc(ensureDb(), 'users', uid(), 'timeline', id), deepStripUndefined(full));
     return full;
   },
 

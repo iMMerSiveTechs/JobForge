@@ -10,13 +10,19 @@ import { Reminder } from '../models/types';
 import { makeId } from '../domain/id';
 
 function uid(): string {
+  if (!auth) throw new Error('reminders: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
   const user = auth.currentUser;
   if (!user) throw new Error('reminders: user is not signed in');
   return user.uid;
 }
 
-function remCol() { return collection(db, 'users', uid(), 'reminders'); }
-function remRef(id: string) { return doc(db, 'users', uid(), 'reminders', id); }
+function ensureDb() {
+  if (!db) throw new Error('reminders: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
+function remCol() { return collection(ensureDb(), 'users', uid(), 'reminders'); }
+function remRef(id: string) { return doc(ensureDb(), 'users', uid(), 'reminders', id); }
 
 function ts(v: any): string {
   return v instanceof Timestamp ? v.toDate().toISOString() : (v ?? new Date().toISOString());

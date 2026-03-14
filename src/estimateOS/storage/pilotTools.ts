@@ -124,6 +124,6 @@ export async function clearPilotData(): Promise<void> {
     ...estimates.map(e => EstimateRepository.deleteEstimate(e.id)),
     ...invoices.map(i => InvoiceRepository.deleteInvoice(i.id)),
     ...reminders.map(r => ReminderRepository.deleteReminder(r.id)),
-    ...drafts.map(d => IntakeDraftRepository.deleteIntakeDraft(d.id)),
+    ...drafts.map(d => IntakeDraftRepository.deleteDraft(d.id)),
   ]);
 }

@@ -9,13 +9,19 @@ import { auth, db } from '../firebase/config';
 import { Invoice } from '../models/types';
 
 function uid(): string {
+  if (!auth) throw new Error('InvoiceRepository: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
   const user = auth.currentUser;
   if (!user) throw new Error('InvoiceRepository: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db, 'users', uid(), 'invoices'); }
-function ref(id: string) { return doc(db, 'users', uid(), 'invoices', id); }
+function ensureDb() {
+  if (!db) throw new Error('InvoiceRepository: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
+function col() { return collection(ensureDb(), 'users', uid(), 'invoices'); }
+function ref(id: string) { return doc(ensureDb(), 'users', uid(), 'invoices', id); }
 
 // Firebase v11 throws on undefined values at any nesting level.
 // Strip recursively before every write (FieldValue sentinels are kept).

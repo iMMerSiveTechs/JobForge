@@ -108,21 +108,23 @@ export function SettingsScreen({ navigation }: any) {
   const [showCredits, setShowCredits]     = useState(false);
   const { show: showToast, Toast } = useToast();
 
-  const load = useCallback(async () => {
-    // Load settings and credits independently so a credits failure doesn't
-    // reset previously loaded settings to defaults.
-    try {
-      const s = await getSettings();
-      setSettings(s);
-    } catch {
-      setSettings(prev => prev ?? DEFAULT_SETTINGS);
-    }
-    try {
-      const bal = await getCredits();
-      setCreditBalance(bal.balance);
-    } catch {
-      // credit balance stays at 0; non-fatal
-    }
+  const load = useCallback(() => {
+    (async () => {
+      // Load settings and credits independently so a credits failure doesn't
+      // reset previously loaded settings to defaults.
+      try {
+        const s = await getSettings();
+        setSettings(s);
+      } catch {
+        setSettings(prev => prev ?? DEFAULT_SETTINGS);
+      }
+      try {
+        const bal = await getCredits();
+        setCreditBalance(bal.balance);
+      } catch {
+        // credit balance stays at 0; non-fatal
+      }
+    })();
   }, []);
 
   useFocusEffect(load);

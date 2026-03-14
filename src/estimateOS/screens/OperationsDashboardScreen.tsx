@@ -80,46 +80,48 @@ export function OperationsDashboardScreen({ navigation }: any) {
   const { dismissed: checklistDismissed, dismiss: dismissChecklist } = useGettingStartedDismissed();
   const isFirstLoad = useRef(true);
 
-  const load = useCallback(async () => {
-    // Only show the full-screen spinner on the very first load.
-    // On subsequent focus returns, refresh silently so existing data
-    // remains visible while the update runs in the background.
-    if (isFirstLoad.current) setLoading(true);
-    try {
-      // Core business data — these must succeed for the dashboard to be useful.
-      const [ests, invs, custs, rems, intakes] = await Promise.all([
-        EstimateRepository.listEstimates(),
-        InvoiceRepository.listInvoices(),
-        CustomerRepository.listCustomers(),
-        ReminderRepository.listPending(),
-        IntakeDraftRepository.listByStatus('new'),
-      ]);
-      setEstimates(ests);
-      setInvoices(invs);
-      setCustomers(custs);
-      setReminders(rems);
-      setDrafts(intakes);
-
-      // Profile check — read settings + onboarding independently so a Firestore
-      // or AsyncStorage failure does not wipe out the rest of the dashboard data.
+  const load = useCallback(() => {
+    (async () => {
+      // Only show the full-screen spinner on the very first load.
+      // On subsequent focus returns, refresh silently so existing data
+      // remains visible while the update runs in the background.
+      if (isFirstLoad.current) setLoading(true);
       try {
-        const [settings, onboarding] = await Promise.all([getSettings(), getOnboardingData()]);
-        setHasProfile(
-          !!settings.businessProfile.businessName?.trim() ||
-          !!onboarding?.companyName?.trim()
-        );
-      } catch {
-        // Non-fatal: profile completeness check fails gracefully.
-        // Try AsyncStorage alone as a last resort.
+        // Core business data — these must succeed for the dashboard to be useful.
+        const [ests, invs, custs, rems, intakes] = await Promise.all([
+          EstimateRepository.listEstimates(),
+          InvoiceRepository.listInvoices(),
+          CustomerRepository.listCustomers(),
+          ReminderRepository.listPending(),
+          IntakeDraftRepository.listByStatus('new'),
+        ]);
+        setEstimates(ests);
+        setInvoices(invs);
+        setCustomers(custs);
+        setReminders(rems);
+        setDrafts(intakes);
+
+        // Profile check — read settings + onboarding independently so a Firestore
+        // or AsyncStorage failure does not wipe out the rest of the dashboard data.
         try {
-          const onboarding = await getOnboardingData();
-          if (onboarding?.companyName?.trim()) setHasProfile(true);
-        } catch { /* ignore */ }
+          const [settings, onboarding] = await Promise.all([getSettings(), getOnboardingData()]);
+          setHasProfile(
+            !!settings.businessProfile.businessName?.trim() ||
+            !!onboarding?.companyName?.trim()
+          );
+        } catch {
+          // Non-fatal: profile completeness check fails gracefully.
+          // Try AsyncStorage alone as a last resort.
+          try {
+            const onboarding = await getOnboardingData();
+            if (onboarding?.companyName?.trim()) setHasProfile(true);
+          } catch { /* ignore */ }
+        }
+      } finally {
+        isFirstLoad.current = false;
+        setLoading(false);
       }
-    } finally {
-      isFirstLoad.current = false;
-      setLoading(false);
-    }
+    })();
   }, []);
 
   useFocusEffect(load);

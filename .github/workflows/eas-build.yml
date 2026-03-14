@@ -11,12 +11,12 @@ on:
       platform:
         description: 'Platform to build'
         required: true
-        default: 'all'
+        default: 'ios'
         type: choice
         options:
-          - all
           - ios
           - android
+          - all
       profile:
         description: 'Build profile'
         required: true
@@ -33,37 +33,10 @@ on:
         type: boolean
 
 jobs:
-  # ── Full native build + submit on every push to claude/* branches ─────────────
+  # ── EAS iOS build on every push to claude/* branches ─────────────────────────
   build-auto:
     name: EAS Build iOS (auto)
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build iOS on EAS (no submit — bootstrap credentials first)
-        run: eas build --platform ios --profile production --non-interactive
-
-  # ── Full native build on manual trigger ──────────────────────────────────────
-  build-manual:
-    name: EAS Build (${{ github.event.inputs.platform }})
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -90,6 +63,45 @@ jobs:
           echo "${{ secrets.ASC_API_KEY_P8 }}" > $HOME/private_keys/AuthKey.p8
           echo "EXPO_ASC_API_KEY_PATH=$HOME/private_keys/AuthKey.p8" >> $GITHUB_ENV
 
+      - name: Build iOS on EAS
+        env:
+          EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
+        run: eas build --platform ios --profile production --non-interactive
+
+  # ── Full native build on manual trigger ──────────────────────────────────────
+  build-manual:
+    name: EAS Build (${{ inputs.platform }})
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Write App Store Connect API Key
+        if: inputs.platform == 'ios' || inputs.platform == 'all'
+        run: |
+          mkdir -p $HOME/private_keys
+          echo "${{ secrets.ASC_API_KEY_P8 }}" > $HOME/private_keys/AuthKey.p8
+          echo "EXPO_ASC_API_KEY_PATH=$HOME/private_keys/AuthKey.p8" >> $GITHUB_ENV
+
       - name: Build on EAS (with auto-submit)
         if: inputs.auto_submit == true
         env:
@@ -97,7 +109,7 @@ jobs:
           EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
-        run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --auto-submit --non-interactive
+        run: eas build --platform ${{ inputs.platform }} --profile ${{ inputs.profile }} --auto-submit --non-interactive
 
       - name: Build on EAS (no submit)
         if: inputs.auto_submit != true
@@ -106,4 +118,4 @@ jobs:
           EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
-        run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --non-interactive
+        run: eas build --platform ${{ inputs.platform }} --profile ${{ inputs.profile }} --non-interactive

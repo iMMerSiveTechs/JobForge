@@ -26,6 +26,7 @@ import {
   VerticalConfig, ServiceConfig, PricingRule, PriceRange,
   PriceDriver, BucketSummary, DriverBucket, DriverOverrideMap,
   LineItem,
+  FlatFeeRule, ConditionalAddonRule, PerUnitRule, TieredRule, AdderRule, MultiplierRule,
 } from '../models/types';
 
 // ─── Public result type ───────────────────────────────────────────────────────
@@ -45,15 +46,19 @@ export interface PricingResultV2 {
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
 
-interface CacheKey { serviceId: string; answersHash: string; overridesHash: string; manualHash: string; }
+interface CacheKey { verticalId: string; serviceId: string; answersHash: string; overridesHash: string; manualHash: string; }
 const _cache = new Map<string, { key: CacheKey; result: PricingResultV2 }>();
 const MAX_CACHE = 20;
 
 function hashObj(obj: unknown): string {
-  return JSON.stringify(obj, Object.keys(obj as any).sort());
+  return JSON.stringify(obj, (_key, value) =>
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? Object.fromEntries(Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)))
+      : value
+  );
 }
 function cacheKeyStr(k: CacheKey): string {
-  return `${k.serviceId}|${k.answersHash}|${k.overridesHash}|${k.manualHash}`;
+  return `${k.verticalId}|${k.serviceId}|${k.answersHash}|${k.overridesHash}|${k.manualHash}`;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -61,8 +66,10 @@ function cacheKeyStr(k: CacheKey): string {
 function round5(n: number): number { return Math.round(n / 5) * 5; }
 function clamp(n: number): number  { return Math.max(0, isFinite(n) ? n : 0); }
 
+type TriggerableRule = ConditionalAddonRule | AdderRule | MultiplierRule;
+
 function matchesAnswer(
-  rule: PricingRule,
+  rule: TriggerableRule,
   answer: string | number | boolean | string[] | undefined | null,
 ): boolean {
   if (answer === undefined || answer === null) return false;
@@ -142,6 +149,7 @@ export function computePricingV2(
 ): PricingResultV2 {
   // ── Cache check ─────────────────────────────────────────────────────────────
   const cacheKey: CacheKey = {
+    verticalId:   config.id,
     serviceId:    service.id,
     answersHash:  hashObj(answers),
     overridesHash:hashObj(overrides),
@@ -168,16 +176,17 @@ export function computePricingV2(
   let runMax = service.baseMax;
 
   // Separate multipliers to apply last
-  const multipliers: PricingRule[] = [];
+  const multipliers: MultiplierRule[] = [];
 
   const ruleOrder: Array<PricingRule['type']> = [
     'flat_fee', 'conditional_addon', 'per_unit', 'tiered', 'adder',
   ];
 
-  const byType = (t: PricingRule['type']) => config.pricingRules.filter(r => r.type === t);
+  const byType = <T extends PricingRule>(t: T['type']): T[] =>
+    config.pricingRules.filter((r): r is T => r.type === t);
 
   // ── flat_fee ─────────────────────────────────────────────────────────────────
-  for (const [ruleIdx, rule] of byType('flat_fee').entries()) {
+  for (const [ruleIdx, rule] of byType<FlatFeeRule>('flat_fee').entries()) {
     const id = `flat_fee_${ruleIdx}`;
     const addMin = clamp(rule.valueMin);
     const addMax = clamp(rule.valueMax);
@@ -193,7 +202,7 @@ export function computePricingV2(
   }
 
   // ── conditional_addon ────────────────────────────────────────────────────────
-  for (const [ruleIdx, rule] of byType('conditional_addon').entries()) {
+  for (const [ruleIdx, rule] of byType<ConditionalAddonRule>('conditional_addon').entries()) {
     const answer = answers[rule.questionId];
     if (matchesAnswer(rule, answer as any)) {
       const id = `conditional_${ruleIdx}`;
@@ -211,7 +220,7 @@ export function computePricingV2(
   }
 
   // ── per_unit ──────────────────────────────────────────────────────────────────
-  for (const [ruleIdx, rule] of byType('per_unit').entries()) {
+  for (const [ruleIdx, rule] of byType<PerUnitRule>('per_unit').entries()) {
     const rawAnswer = answers[rule.questionId];
     const units = clamp(Number(rawAnswer));
     if (units > 0) {
@@ -233,7 +242,7 @@ export function computePricingV2(
   }
 
   // ── tiered ───────────────────────────────────────────────────────────────────
-  for (const [ruleIdx, rule] of byType('tiered').entries()) {
+  for (const [ruleIdx, rule] of byType<TieredRule>('tiered').entries()) {
     const rawAnswer = answers[rule.questionId];
     const num = Number(rawAnswer);
     if (!isNaN(num) && rule.tieredData?.length) {
@@ -257,7 +266,7 @@ export function computePricingV2(
   }
 
   // ── adder (legacy) ────────────────────────────────────────────────────────────
-  for (const [ruleIdx, rule] of byType('adder').entries()) {
+  for (const [ruleIdx, rule] of byType<AdderRule>('adder').entries()) {
     const answer = answers[rule.questionId];
     if (matchesAnswer(rule, answer as any)) {
       const id = `adder_${ruleIdx}`;
@@ -274,7 +283,7 @@ export function computePricingV2(
   }
 
   // ── multiplier (applied last) ─────────────────────────────────────────────────
-  for (const [ruleIdx, rule] of byType('multiplier').entries()) {
+  for (const [ruleIdx, rule] of byType<MultiplierRule>('multiplier').entries()) {
     const answer = answers[rule.questionId];
     if (matchesAnswer(rule, answer as any)) {
       const id = `multiplier_${ruleIdx}`;

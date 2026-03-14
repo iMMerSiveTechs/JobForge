@@ -160,7 +160,7 @@ async function processPhoto(id: string, uri: string): Promise<void> {
   patchJob(id, { progress: 20 });
 
   // Get image dimensions first so we only downscale, never upscale
-  const [{ width: origW, height: origH }] =
+  const { width: origW, height: origH } =
     await ImageManipulator.manipulateAsync(uri, [], { base64: false });
 
   const maxDim = IMAGE_MAX_DIMENSION;
@@ -197,7 +197,7 @@ async function processVideo(id: string, uri: string): Promise<void> {
     );
 
     for (let i = 0; i < timestamps.length; i++) {
-      patchJob(id, { progress: Math.round(10 + (i / timestamps.length) * 80) });
+      patchJob(id, { progress: Math.round(10 + ((i + 1) / timestamps.length) * 80) });
       try {
         const { uri: frameUri } = await VideoThumbnails.getThumbnailAsync(uri, {
           time: timestamps[i],

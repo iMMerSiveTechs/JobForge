@@ -118,15 +118,17 @@ export function CustomerListScreen({ navigation }: any) {
   const [statusFilter, setStatusFilter] = useState<FollowUpStatus | null>(null);
   const isFirstLoad = useRef(true);
 
-  const load = useCallback(async () => {
-    if (isFirstLoad.current) setLoading(true);
-    setLoadError(false);
-    try { setCustomers(await CustomerRepository.listCustomers()); }
-    catch { setLoadError(true); }
-    finally {
-      isFirstLoad.current = false;
-      setLoading(false);
-    }
+  const load = useCallback(() => {
+    (async () => {
+      if (isFirstLoad.current) setLoading(true);
+      setLoadError(false);
+      try { setCustomers(await CustomerRepository.listCustomers()); }
+      catch { setLoadError(true); }
+      finally {
+        isFirstLoad.current = false;
+        setLoading(false);
+      }
+    })();
   }, []);
 
   useFocusEffect(load);

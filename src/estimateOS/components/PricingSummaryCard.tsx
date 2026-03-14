@@ -19,13 +19,15 @@ import {
 } from 'react-native';
 import { T, radii } from '../theme';
 import { BUCKET_LABELS } from '../models/types';
-import { PriceDriver, BucketSummary, DriverBucket, DriverOverride, DriverOverrideMap, PricingResult } from '../models/types';
+import { PriceDriver, BucketSummary, DriverBucket, DriverOverrideMap } from '../models/types';
+import { PricingResultV2 } from '../domain/pricingEngineV2';
+import { makeId } from '../domain/id';
 import { OverrideModal } from './OverrideModal';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface Props {
-  result:    PricingResult | null;
+  result:    PricingResultV2 | null;
   overrides: DriverOverrideMap;
   onOverrideChange: (map: DriverOverrideMap) => void;
 }
@@ -63,8 +65,6 @@ interface ManualLineModalProps {
   onClose: () => void;
 }
 
-let _manualIdx = 0;
-
 function ManualLineModal({ visible, onSave, onClose }: ManualLineModalProps) {
   const [label,  setLabel]  = useState('');
   const [low,    setLow]    = useState('');
@@ -83,7 +83,7 @@ function ManualLineModal({ visible, onSave, onClose }: ManualLineModalProps) {
 
   const handleSave = () => {
     onSave({
-      id:          `manual_${_manualIdx++}`,
+      id:          `manual_${makeId()}`,
       label:       label.trim(),
       minImpact:   parsedLow,
       maxImpact:   parsedHigh,
@@ -209,13 +209,7 @@ export function PricingSummaryCard({ result, overrides, onOverrideChange }: Prop
   const displayMin = hasOverrides ? Math.round(effMin / 5) * 5 : result.range.min;
   const displayMax = hasOverrides ? Math.round(effMax / 5) * 5 : result.range.max;
 
-  function handleOverrideSave(o: DriverOverride) {
-    onOverrideChange({ ...overrides, [o.driverId]: o });
-  }
-
-  function handleOverrideClear(driverId: string) {
-    const next = { ...overrides };
-    delete next[driverId];
+  function handleOverrideSave(next: DriverOverrideMap) {
     onOverrideChange(next);
   }
 
@@ -318,9 +312,9 @@ export function PricingSummaryCard({ result, overrides, onOverrideChange }: Prop
       {/* Override modal */}
       <OverrideModal
         driver={editingDriver}
-        override={editingDriver ? overrides[editingDriver.id] : undefined}
+        visible={editingDriver !== null}
+        overrides={overrides}
         onSave={handleOverrideSave}
-        onClear={handleOverrideClear}
         onClose={() => setEditingDriver(null)}
       />
 

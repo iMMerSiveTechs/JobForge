@@ -9,13 +9,19 @@ import { auth, db } from '../firebase/config';
 import { Customer } from '../models/types';
 
 function uid(): string {
+  if (!auth) throw new Error('CustomerRepository: Firebase not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
   const user = auth.currentUser;
   if (!user) throw new Error('CustomerRepository: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db, 'users', uid(), 'customers'); }
-function ref(id: string) { return doc(db, 'users', uid(), 'customers', id); }
+function ensureDb() {
+  if (!db) throw new Error('CustomerRepository: Firestore not initialized — check EXPO_PUBLIC_FIREBASE_* env vars');
+  return db;
+}
+
+function col() { return collection(ensureDb(), 'users', uid(), 'customers'); }
+function ref(id: string) { return doc(ensureDb(), 'users', uid(), 'customers', id); }
 
 function deserialize(data: Record<string, any>): Customer {
   const ts = (v: any) =>
