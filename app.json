@@ -3,6 +3,15 @@
     "name": "JobForge",
     "slug": "jobforge",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/249e21a2-21e3-4f6f-8509-9d7dd4c1f2f7",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -42,7 +51,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-image-picker"
+      "expo-image-picker",
+      "expo-updates"
     ],
     "extra": {
       "eas": {
