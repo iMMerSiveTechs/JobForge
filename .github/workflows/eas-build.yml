@@ -36,9 +36,9 @@ on:
           - 'false'
 
 jobs:
-  # ── OTA update on every push to claude/* branches ────────────────────────────
-  ota-update:
-    name: EAS Update (OTA)
+  # ── Full native build + submit on every push to claude/* branches ─────────────
+  build-auto:
+    name: EAS Build iOS (auto)
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -60,8 +60,17 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Publish OTA update to production channel
-        run: eas update --channel production --message "Auto-update from ${{ github.ref_name }} @ ${{ github.sha }}" --non-interactive
+      - name: Write App Store Connect API Key
+        run: |
+          mkdir -p ~/private_keys
+          echo "${{ secrets.ASC_API_KEY_P8 }}" > ~/private_keys/AuthKey.p8
+
+      - name: Build and submit iOS to TestFlight
+        env:
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
+        run: eas build --platform ios --profile production --auto-submit --non-interactive
 
   # ── Full native build on manual trigger ──────────────────────────────────────
   build-manual:
