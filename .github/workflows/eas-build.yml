@@ -41,8 +41,6 @@ jobs:
     name: EAS Build iOS (auto)
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    env:
-      HAS_ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 != '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,21 +61,17 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Write App Store Connect API Key
-        if: env.HAS_ASC_API_KEY_P8 == 'true'
         run: |
           mkdir -p ~/private_keys
           echo "${{ secrets.ASC_API_KEY_P8 }}" > ~/private_keys/AuthKey.p8
 
-      - name: Build and submit iOS to TestFlight (with explicit ASC key)
-        if: env.HAS_ASC_API_KEY_P8 == 'true'
+      - name: Build and submit iOS to TestFlight
         env:
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
-        run: eas build --platform ios --profile production --auto-submit --non-interactive
-
-      - name: Build and submit iOS to TestFlight (use Expo-stored credentials)
-        if: env.HAS_ASC_API_KEY_P8 == 'false'
+          EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
         run: eas build --platform ios --profile production --auto-submit --non-interactive
 
   # ── Full native build on manual trigger ──────────────────────────────────────
@@ -105,7 +99,6 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Write App Store Connect API Key
-        if: github.event.inputs.auto_submit == 'true'
         run: |
           mkdir -p ~/private_keys
           echo "${{ secrets.ASC_API_KEY_P8 }}" > ~/private_keys/AuthKey.p8
@@ -116,8 +109,16 @@ jobs:
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
           EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
+          EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
         run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --auto-submit --non-interactive
 
       - name: Build on EAS (no submit)
         if: github.event.inputs.auto_submit == 'false'
+        env:
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
+          EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
         run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --non-interactive
