@@ -29,11 +29,8 @@ on:
       auto_submit:
         description: 'Auto-submit to App Store / Play Store after build?'
         required: true
-        default: 'false'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
+        default: false
+        type: boolean
 
 jobs:
   # ── Full native build + submit on every push to claude/* branches ─────────────
@@ -94,7 +91,7 @@ jobs:
           echo "EXPO_ASC_API_KEY_PATH=$HOME/private_keys/AuthKey.p8" >> $GITHUB_ENV
 
       - name: Build on EAS (with auto-submit)
-        if: github.event.inputs.auto_submit == 'true'
+        if: inputs.auto_submit == true
         env:
           EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
@@ -103,7 +100,7 @@ jobs:
         run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --auto-submit --non-interactive
 
       - name: Build on EAS (no submit)
-        if: github.event.inputs.auto_submit == 'false'
+        if: inputs.auto_submit != true
         env:
           EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
