@@ -67,9 +67,9 @@ jobs:
 
       - name: Build and submit iOS to TestFlight
         env:
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
+          EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          EXPO_ASC_API_KEY_PATH: ~/private_keys/AuthKey.p8
           EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
         run: eas build --platform ios --profile production --auto-submit --non-interactive
@@ -106,9 +106,9 @@ jobs:
       - name: Build on EAS (with auto-submit)
         if: github.event.inputs.auto_submit == 'true'
         env:
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
+          EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          EXPO_ASC_API_KEY_PATH: ~/private_keys/AuthKey.p8
           EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
         run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --auto-submit --non-interactive
@@ -116,9 +116,9 @@ jobs:
       - name: Build on EAS (no submit)
         if: github.event.inputs.auto_submit == 'false'
         env:
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
-          EXPO_APPLE_APP_STORE_CONNECT_API_KEY_PATH: ~/private_keys/AuthKey.p8
+          EXPO_ASC_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+          EXPO_ASC_API_KEY_PATH: ~/private_keys/AuthKey.p8
           EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
         run: eas build --platform ${{ github.event.inputs.platform }} --profile ${{ github.event.inputs.profile }} --non-interactive
