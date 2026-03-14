@@ -14,13 +14,13 @@ import { auth, db } from '../firebase/config';
 import { VerticalConfig } from '../models/types';
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('customVerticals: user is not signed in');
   return user.uid;
 }
 
 function verticalsCol() {
-  return collection(db, 'users', uid(), 'customVerticals');
+  return collection(db!, 'users', uid(), 'customVerticals');
 }
 
 export async function loadCustomVerticals(): Promise<VerticalConfig[]> {

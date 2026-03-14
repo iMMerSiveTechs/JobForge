@@ -50,21 +50,23 @@ export function CustomerDetailScreen({ route, navigation }: any) {
   const [notes, setNotes]                 = useState('');
   const [nameErr, setNameErr]             = useState('');
 
-  const load = useCallback(async () => {
-    if (!customerId) return;
-    setLoading(true);
-    setLoadError(false);
-    try {
-      const [c, ests, invs] = await Promise.all([
-        CustomerRepository.getCustomer(customerId),
-        EstimateRepository.listByCustomer(customerId),
-        InvoiceRepository.listByCustomer(customerId),
-      ]);
-      setCustomer(c);
-      setEstimates(ests);
-      setInvoices(invs);
-    } catch { setLoadError(true); }
-    finally { setLoading(false); }
+  const load = useCallback(() => {
+    (async () => {
+      if (!customerId) return;
+      setLoading(true);
+      setLoadError(false);
+      try {
+        const [c, ests, invs] = await Promise.all([
+          CustomerRepository.getCustomer(customerId),
+          EstimateRepository.listByCustomer(customerId),
+          InvoiceRepository.listByCustomer(customerId),
+        ]);
+        setCustomer(c);
+        setEstimates(ests);
+        setInvoices(invs);
+      } catch { setLoadError(true); }
+      finally { setLoading(false); }
+    })();
   }, [customerId]);
 
   useFocusEffect(load);

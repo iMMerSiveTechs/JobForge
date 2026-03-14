@@ -41,15 +41,17 @@ export function EstimateListScreen({ navigation }: any) {
   const [loading, setLoading]     = useState(true);
   const isFirstLoad = useRef(true);
 
-  const load = useCallback(async () => {
-    if (isFirstLoad.current) setLoading(true);
-    try {
-      const list = await EstimateRepository.listEstimates();
-      setEstimates(list);
-    } finally {
-      isFirstLoad.current = false;
-      setLoading(false);
-    }
+  const load = useCallback(() => {
+    (async () => {
+      if (isFirstLoad.current) setLoading(true);
+      try {
+        const list = await EstimateRepository.listEstimates();
+        setEstimates(list);
+      } finally {
+        isFirstLoad.current = false;
+        setLoading(false);
+      }
+    })();
   }, []);
 
   useFocusEffect(load);

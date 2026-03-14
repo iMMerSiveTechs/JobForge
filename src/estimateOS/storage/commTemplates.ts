@@ -11,13 +11,13 @@ import { CommTemplate, CommTemplateType } from '../models/types';
 import { makeId } from '../domain/id';
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('commTemplates: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db, 'users', uid(), 'commTemplates'); }
-function ref(id: string) { return doc(db, 'users', uid(), 'commTemplates', id); }
+function col() { return collection(db!, 'users', uid(), 'commTemplates'); }
+function ref(id: string) { return doc(db!, 'users', uid(), 'commTemplates', id); }
 
 function ts(v: any): string {
   return v instanceof Timestamp ? v.toDate().toISOString() : (v ?? new Date().toISOString());

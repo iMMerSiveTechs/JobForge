@@ -20,6 +20,7 @@ import {
   PricingRule, PricingRuleType, DriverBucket,
   BUCKET_LABELS, TieredBand,
 } from '../models/types';
+import { makeId } from '../domain/id';
 
 interface Props {
   visible: boolean;
@@ -95,27 +96,30 @@ export function RuleBuilderModal({ visible, questionOptions, onSave, onClose }: 
   const explanation  = autoExplanation(ruleType, label || '(rule)', selectedQ?.label, triggerVal, toNum(low), toNum(high), unitLabel);
 
   function buildRule(): PricingRule {
-    const base: PricingRule = {
-      questionId:  questionId || 'none',
-      answerValue: triggerVal || '',
-      type:        ruleType,
-      valueMin:    toNum(low),
-      valueMax:    toNum(high),
-      label:       label || 'Unnamed Rule',
-      bucket,
-    };
-    if (ruleType === 'per_unit')
-      return { ...base, unitMin: toNum(low), unitMax: toNum(high), unitLabel, unitCap: unitCap ? toNum(unitCap) : undefined };
-    if (ruleType === 'tiered')
-      return { ...base, valueMin: 0, valueMax: 0,
+    const id = makeId();
+    const baseFields = { id, label: label || 'Unnamed Rule', bucket };
+    if (ruleType === 'per_unit') {
+      return { type: 'per_unit', ...baseFields, questionId: questionId || 'none', unitMin: toNum(low), unitMax: toNum(high), unitLabel, unitCap: unitCap ? toNum(unitCap) : undefined };
+    }
+    if (ruleType === 'tiered') {
+      return { type: 'tiered', ...baseFields, questionId: questionId || 'none',
         tieredData: tiers.map(t => ({
           minValue: toNum(t.min), maxValue: t.max === '' ? Infinity : toNum(t.max),
           addMin: toNum(t.addMin), addMax: toNum(t.addMax), label: t.tierLabel,
         } as TieredBand))
       };
-    if (ruleType === 'multiplier' || ruleType === 'conditional_addon')
-      return { ...base, triggerValue: triggerVal };
-    return base;
+    }
+    if (ruleType === 'multiplier') {
+      return { type: 'multiplier', ...baseFields, questionId: questionId || 'none', answerValue: triggerVal || '', triggerValue: triggerVal, valueMin: toNum(low), valueMax: toNum(high) };
+    }
+    if (ruleType === 'conditional_addon') {
+      return { type: 'conditional_addon', ...baseFields, questionId: questionId || 'none', triggerValue: triggerVal, answerValue: triggerVal || '', valueMin: toNum(low), valueMax: toNum(high) };
+    }
+    if (ruleType === 'adder') {
+      return { type: 'adder', ...baseFields, questionId: questionId || 'none', answerValue: triggerVal || '', valueMin: toNum(low), valueMax: toNum(high) };
+    }
+    // flat_fee
+    return { type: 'flat_fee', ...baseFields, valueMin: toNum(low), valueMax: toNum(high) };
   }
 
   function canAdvance() {

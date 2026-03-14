@@ -39,9 +39,11 @@ export function CommTemplatesScreen({ navigation }: any) {
   const [showPreview, setShowPreview] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const load = useCallback(async () => {
-    const list = await CommTemplateRepository.listTemplates();
-    setTemplates(list);
+  const load = useCallback(() => {
+    (async () => {
+      const list = await CommTemplateRepository.listTemplates();
+      setTemplates(list);
+    })();
   }, []);
   useFocusEffect(load);
 

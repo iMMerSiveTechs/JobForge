@@ -9,13 +9,13 @@ import { auth, db } from '../firebase/config';
 import { Invoice } from '../models/types';
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('InvoiceRepository: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db, 'users', uid(), 'invoices'); }
-function ref(id: string) { return doc(db, 'users', uid(), 'invoices', id); }
+function col() { return collection(db!, 'users', uid(), 'invoices'); }
+function ref(id: string) { return doc(db!, 'users', uid(), 'invoices', id); }
 
 // Firebase v11 throws on undefined values at any nesting level.
 // Strip recursively before every write (FieldValue sentinels are kept).

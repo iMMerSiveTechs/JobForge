@@ -173,6 +173,7 @@ export function NewEstimateScreen({ route, navigation }: any) {
   const [customFields, setCustomFields] = useState<CustomIntakeField[]>([]);
   const [customAnswers, setCustomAnswers] = useState<Record<string, AnswerValue>>({});
   const estimateNumberRef = useRef<string | undefined>(undefined);
+  const createdAtRef = useRef<string | undefined>(undefined);
 
   const { show: showToast, Toast } = useToast();
 
@@ -203,6 +204,7 @@ export function NewEstimateScreen({ route, navigation }: any) {
           setAnswers(est.intakeAnswers ?? {});
           setCustomerId(est.customerId);
           estimateNumberRef.current = est.estimateNumber;
+          createdAtRef.current = est.createdAt;
         });
       }
     });
@@ -215,20 +217,23 @@ export function NewEstimateScreen({ route, navigation }: any) {
     }, [estimateId]),
   );
 
+  // BUG FIX: guard against out-of-bounds index after verticals reload
+  const safeVertIdx = Math.min(verticalIdx, verticals.length - 1);
+  const vertical    = verticals[safeVertIdx];
+  const safeSvcIdx  = Math.min(serviceIdx, (vertical?.services?.length ?? 1) - 1);
+  const service     = vertical?.services?.[safeSvcIdx];
+
   // Load template custom intake fields when vertical/service changes
   useEffect(() => {
     if (!vertical?.id || !service?.id) return;
     getTemplate(vertical.id, service.id).then(tmpl => {
       setCustomFields(tmpl?.customIntakeFields ?? []);
       setCustomAnswers({});
+    }).catch(() => {
+      setCustomFields([]);
+      setCustomAnswers({});
     });
   }, [vertical?.id, service?.id]);
-
-  // BUG FIX: guard against out-of-bounds index after verticals reload
-  const safeVertIdx = Math.min(verticalIdx, verticals.length - 1);
-  const vertical    = verticals[safeVertIdx];
-  const safeSvcIdx  = Math.min(serviceIdx, (vertical?.services?.length ?? 1) - 1);
-  const service     = vertical?.services?.[safeSvcIdx];
 
   // Extract AI confidence metadata from answers for badge display
   const aiMeta = useMemo(() => {
@@ -289,7 +294,7 @@ export function NewEstimateScreen({ route, navigation }: any) {
       photos:  [],
       customerId,
       estimateNumber: estimateNumberRef.current,
-      createdAt: now,
+      createdAt: createdAtRef.current ?? now,
       updatedAt: now,
     };
   };
@@ -378,7 +383,7 @@ export function NewEstimateScreen({ route, navigation }: any) {
         <TextInput
           style={[styles.input, nameError ? styles.inputError : null, { marginTop: 10 }]}
           placeholder="Full name (optional for draft)"
-          placeholderTextColor="#475569"
+          placeholderTextColor={T.sub}
           value={customerName}
           onChangeText={(t) => { setCustomerName(t); if (nameError) setNameError(''); }}
           autoCapitalize="words"
@@ -388,7 +393,7 @@ export function NewEstimateScreen({ route, navigation }: any) {
         <TextInput
           style={styles.input}
           placeholder="Phone (optional)"
-          placeholderTextColor="#475569"
+          placeholderTextColor={T.sub}
           value={customerPhone}
           onChangeText={setCustomerPhone}
           keyboardType="phone-pad"
@@ -466,7 +471,7 @@ export function NewEstimateScreen({ route, navigation }: any) {
               // Replace intakeAnswers with snapshot — strip AI metadata keys
               const cleaned: Record<string, AnswerValue> = {};
               for (const [k, v] of Object.entries(record.answersSnapshot)) {
-                if (!k.startsWith(AI_META_PREFIX)) cleaned[k] = v;
+                if (!k.startsWith(AI_META_PREFIX)) cleaned[k] = v as AnswerValue;
               }
               setAnswers(cleaned);
               await EstimateRepository.upsertEstimate({
@@ -539,12 +544,12 @@ const styles = StyleSheet.create({
 
   chips:         { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 4 },
   chip:          { borderWidth: 1, borderColor: T.border, borderRadius: radii.md, paddingHorizontal: 12, paddingVertical: 8 },
-  chipActive:    { backgroundColor: T.accent, borderColor: '#0ea5e9' },
+  chipActive:    { backgroundColor: T.accent, borderColor: T.accent },
   chipText:      { color: T.textDim, fontSize: 14 },
   chipTextActive:{ color: '#fff', fontWeight: '600' },
   chipSub:       { color: T.sub, fontSize: 11, marginTop: 2 },
 
-  errorBanner:     { backgroundColor: T.redLo, borderWidth: 1, borderColor: '#7f1d1d', borderRadius: radii.sm, padding: 12, marginTop: 8 },
+  errorBanner:     { backgroundColor: T.redLo, borderWidth: 1, borderColor: T.red, borderRadius: radii.sm, padding: 12, marginTop: 8 },
   errorBannerText: { color: T.redHi, fontSize: 13 },
 
   actions:    { flexDirection: 'row', gap: 12, marginTop: 24 },

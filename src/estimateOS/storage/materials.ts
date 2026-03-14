@@ -9,13 +9,13 @@ import { auth, db } from '../firebase/config';
 import { Material } from '../models/types';
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('MaterialRepository: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db, 'users', uid(), 'materials'); }
-function ref(id: string) { return doc(db, 'users', uid(), 'materials', id); }
+function col() { return collection(db!, 'users', uid(), 'materials'); }
+function ref(id: string) { return doc(db!, 'users', uid(), 'materials', id); }
 
 function deserialize(data: Record<string, any>): Material {
   const ts = (v: any) =>

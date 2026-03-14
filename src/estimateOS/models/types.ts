@@ -103,19 +103,21 @@ export interface PerUnitRule {
   unitCap?: number;
 }
 
+export interface TieredBand {
+  label: string;
+  minValue: number;
+  maxValue: number;  // use Infinity for open-ended top tier
+  addMin: number;
+  addMax: number;
+}
+
 export interface TieredRule {
   type: 'tiered';
   id: string;
   label: string;
   bucket: DriverBucket;
   questionId: string;
-  tieredData: Array<{
-    label: string;
-    minValue: number;
-    maxValue: number;  // use Infinity for open-ended top tier
-    addMin: number;
-    addMax: number;
-  }>;
+  tieredData: TieredBand[];
 }
 
 export interface AdderRule {

@@ -10,13 +10,13 @@ import { IntakeDraft } from '../models/types';
 import { makeId } from '../domain/id';
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('intakeDrafts: user is not signed in');
   return user.uid;
 }
 
-function intakeCol() { return collection(db, 'users', uid(), 'intakeDrafts'); }
-function intakeRef(id: string) { return doc(db, 'users', uid(), 'intakeDrafts', id); }
+function intakeCol() { return collection(db!, 'users', uid(), 'intakeDrafts'); }
+function intakeRef(id: string) { return doc(db!, 'users', uid(), 'intakeDrafts', id); }
 
 function ts(v: any): string {
   return v instanceof Timestamp ? v.toDate().toISOString() : (v ?? new Date().toISOString());

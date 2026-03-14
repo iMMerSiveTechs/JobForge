@@ -10,6 +10,7 @@
 // firebaseConfigured before using auth/db/storage/functions.
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+// @ts-ignore: getReactNativePersistence exists in the React Native bundle but is absent from TS declarations
 import { initializeAuth, getAuth, getReactNativePersistence, Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore, Firestore } from 'firebase/firestore';

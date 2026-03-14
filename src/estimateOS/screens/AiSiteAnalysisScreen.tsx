@@ -647,19 +647,21 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
   // Retain last used jobs for retry (do not clear on analysis)
   const lastJobsRef = useRef<MediaJob[]>([]);
 
-  const loadData = useCallback(async () => {
-    const [bal, cs, hist, custom, stripeOk] = await Promise.all([
-      getCredits(),
-      getCreditSettings(),
-      getAnalysisHistory(),
-      loadCustomVerticals(),
-      isStripeReady(),
-    ]);
-    setCredits(bal);
-    setCreditSettings(cs);
-    setHistory(hist);
-    setAllVerticals(mergeVerticals(ALL_VERTICALS, custom));
-    setStripeConfigured(stripeOk);
+  const loadData = useCallback(() => {
+    (async () => {
+      const [bal, cs, hist, custom, stripeOk] = await Promise.all([
+        getCredits(),
+        getCreditSettings(),
+        getAnalysisHistory(),
+        loadCustomVerticals(),
+        isStripeReady(),
+      ]);
+      setCredits(bal);
+      setCreditSettings(cs);
+      setHistory(hist as unknown as AiAnalysisRecord[]);
+      setAllVerticals(mergeVerticals(ALL_VERTICALS, custom));
+      setStripeConfigured(stripeOk);
+    })();
   }, []);
 
   useFocusEffect(loadData);

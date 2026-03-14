@@ -20,12 +20,12 @@ function deepStripUndefined(obj: Record<string, any>): Record<string, any> {
 }
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('settings: user is not signed in');
   return user.uid;
 }
 
-function settingsRef() { return doc(db, 'users', uid(), 'settings', 'app'); }
+function settingsRef() { return doc(db!, 'users', uid(), 'settings', 'app'); }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   businessProfile: {

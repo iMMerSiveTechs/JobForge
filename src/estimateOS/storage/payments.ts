@@ -18,15 +18,15 @@ import {
 import { makeId } from '../domain/id';
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('PaymentRepository: user is not signed in');
   return user.uid;
 }
 
-function reqCol()  { return collection(db, 'users', uid(), 'paymentRequests'); }
-function reqRef(id: string) { return doc(db, 'users', uid(), 'paymentRequests', id); }
-function planCol() { return collection(db, 'users', uid(), 'paymentPlans'); }
-function planRef(id: string) { return doc(db, 'users', uid(), 'paymentPlans', id); }
+function reqCol()  { return collection(db!, 'users', uid(), 'paymentRequests'); }
+function reqRef(id: string) { return doc(db!, 'users', uid(), 'paymentRequests', id); }
+function planCol() { return collection(db!, 'users', uid(), 'paymentPlans'); }
+function planRef(id: string) { return doc(db!, 'users', uid(), 'paymentPlans', id); }
 
 function tsStr(v: any): string {
   return v instanceof Timestamp ? v.toDate().toISOString() : (v ?? new Date().toISOString());

@@ -9,13 +9,13 @@ import { auth, db } from '../firebase/config';
 import { Customer } from '../models/types';
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('CustomerRepository: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db, 'users', uid(), 'customers'); }
-function ref(id: string) { return doc(db, 'users', uid(), 'customers', id); }
+function col() { return collection(db!, 'users', uid(), 'customers'); }
+function ref(id: string) { return doc(db!, 'users', uid(), 'customers', id); }
 
 function deserialize(data: Record<string, any>): Customer {
   const ts = (v: any) =>

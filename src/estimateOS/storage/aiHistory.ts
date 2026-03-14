@@ -14,15 +14,16 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
 import { AiScanRecord } from '../models/types';
+export type { AiScanRecord };
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('aiHistory: user is not signed in');
   return user.uid;
 }
 
 function recordsCol(estimateId: string) {
-  return collection(db, 'users', uid(), 'aiHistory', estimateId, 'records');
+  return collection(db!, 'users', uid(), 'aiHistory', estimateId, 'records');
 }
 
 function deserialize(id: string, data: Record<string, any>): AiScanRecord {

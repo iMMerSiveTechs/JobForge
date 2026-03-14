@@ -10,13 +10,13 @@ import { auth, db } from '../firebase/config';
 import { ServiceTemplate } from '../models/types';
 
 function uid(): string {
-  const user = auth.currentUser;
+  const user = auth!.currentUser;
   if (!user) throw new Error('templates: user is not signed in');
   return user.uid;
 }
 
-function col() { return collection(db, 'users', uid(), 'templates'); }
-function ref(id: string) { return doc(db, 'users', uid(), 'templates', id); }
+function col() { return collection(db!, 'users', uid(), 'templates'); }
+function ref(id: string) { return doc(db!, 'users', uid(), 'templates', id); }
 
 function templateId(verticalId: string, serviceId: string) {
   return `${verticalId}_${serviceId}`;
