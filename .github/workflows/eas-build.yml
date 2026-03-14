@@ -72,7 +72,7 @@ jobs:
           EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           EXPO_APPLE_TEAM_TYPE: ${{ secrets.APPLE_TEAM_TYPE }}
-        run: eas build --platform ios --profile production --non-interactive --clear-credentials
+        run: eas build --platform ios --profile production --non-interactive
 
   # ── Full native build on manual trigger ──────────────────────────────────────
   build-manual:

@@ -9,6 +9,6 @@ fi
 cd "$CLAUDE_PROJECT_DIR"
 
 echo "Installing npm dependencies..."
-npm install
+npm install --fund=false
 
 echo "Session start complete."
