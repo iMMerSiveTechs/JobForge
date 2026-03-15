@@ -121,10 +121,10 @@ export function CommReviewModal({
           <View style={s.header}>
             <Text style={s.title}>{intentLabel}</Text>
             <View style={s.headerRight}>
-              <TouchableOpacity onPress={() => setMode(m => m === 'preview' ? 'edit' : 'preview')}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={mode === 'preview' ? 'Switch to edit mode' : 'Preview message'} onPress={() => setMode(m => m === 'preview' ? 'edit' : 'preview')}>
                 <Text style={s.modeToggle}>{mode === 'preview' ? 'Edit' : 'Preview'}</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={onClose}><Text style={s.close}>✕</Text></TouchableOpacity>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close" onPress={onClose}><Text style={s.close}>✕</Text></TouchableOpacity>
             </View>
           </View>
 
@@ -143,6 +143,8 @@ export function CommReviewModal({
                 {templates.map(t => (
                   <TouchableOpacity
                     key={t.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Use ${t.name} template`}
                     style={[s.templateChip, selectedId === t.id && s.templateChipActive]}
                     onPress={() => handleSelectTemplate(t)}
                   >
@@ -211,15 +213,15 @@ export function CommReviewModal({
               </View>
             ) : (
               <>
-                <TouchableOpacity style={s.copyBtn} onPress={() => handleAction('copy')}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel="Copy message" style={s.copyBtn} onPress={() => handleAction('copy')}>
                   <Text style={s.copyTxt}>📋 Copy</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={s.shareBtn} onPress={() => handleAction('share')}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel="Share message" style={s.shareBtn} onPress={() => handleAction('share')}>
                   <Text style={s.shareTxt}>
                     {attachments && attachments.length > 0 ? '📎 Share PDF' : 'Share →'}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={s.emailBtn} onPress={() => handleAction('email')}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel="Send via email" style={s.emailBtn} onPress={() => handleAction('email')}>
                   <Text style={s.emailTxt}>✉️ Email</Text>
                 </TouchableOpacity>
               </>

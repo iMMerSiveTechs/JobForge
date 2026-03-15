@@ -102,6 +102,8 @@ function AiScanHistorySection({
               </View>
               <TouchableOpacity
                 style={ash.revertBtn}
+                accessibilityRole="button"
+                accessibilityLabel={`Revert to AI snapshot from ${rec.createdAt}`}
                 onPress={() => {
                   Alert.alert(
                     'Revert Answers',
@@ -122,7 +124,10 @@ This cannot be undone.`,
         );
       })}
       {history.length > 3 && (
-        <TouchableOpacity style={ash.viewAll} onPress={() => setExpanded(e => !e)}>
+        <TouchableOpacity style={ash.viewAll} onPress={() => setExpanded(e => !e)}
+          accessibilityRole="button"
+          accessibilityLabel={expanded ? 'Show fewer scans' : 'View all scans'}
+        >
           <Text style={ash.viewAllTxt}>{expanded ? 'Show less' : `View all ${history.length} scans`}</Text>
         </TouchableOpacity>
       )}
@@ -161,6 +166,8 @@ export function NewEstimateScreen({ route, navigation }: any) {
   const [verticalIdx, setVerticalIdx]     = useState(0);
   const [serviceIdx, setServiceIdx]       = useState(0);
   const [answers, setAnswers]             = useState<Record<string, AnswerValue>>({});
+  const [debouncedAnswers, setDebouncedAnswers] = useState<Record<string, AnswerValue>>({});
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [fieldErrors, setFieldErrors]     = useState<Record<string, string>>({});
   const [nameError, setNameError]         = useState('');
   const [saving, setSaving]               = useState(false);
@@ -174,6 +181,13 @@ export function NewEstimateScreen({ route, navigation }: any) {
   const [customAnswers, setCustomAnswers] = useState<Record<string, AnswerValue>>({});
   const estimateNumberRef = useRef<string | undefined>(undefined);
   const createdAtRef = useRef<string | undefined>(undefined);
+
+  // Debounce answer changes so computePricingV2 doesn't fire on every keystroke
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedAnswers(answers), 150);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [answers]);
 
   const { show: showToast, Toast } = useToast();
 
@@ -250,11 +264,11 @@ export function NewEstimateScreen({ route, navigation }: any) {
     return meta;
   }, [answers]);
 
-  // Live pricing — recomputes whenever answers, vertical, service, or overrides change
+  // Live pricing — recomputes on debounced answers to avoid firing on every keystroke
   const livePricing: PricingResultV2 | null = useMemo(() => {
     if (!vertical || !service) return null;
-    return computePricingV2(vertical!, service!, answers, driverOverrides);
-  }, [vertical, service, answers, driverOverrides]);
+    return computePricingV2(vertical!, service!, debouncedAnswers, driverOverrides);
+  }, [vertical, service, debouncedAnswers, driverOverrides]);
 
   const handleAnswer = (id: string, val: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [id]: val }));
@@ -409,6 +423,8 @@ export function NewEstimateScreen({ route, navigation }: any) {
               key={v.id}
               style={[styles.chip, safeVertIdx === i && styles.chipActive]}
               onPress={() => handleSelectVertical(i)}
+              accessibilityRole="button"
+              accessibilityLabel={`Select ${v.name} vertical`}
             >
               <Text style={[styles.chipText, safeVertIdx === i && styles.chipTextActive]}>
                 {v.icon} {v.name}
@@ -425,6 +441,8 @@ export function NewEstimateScreen({ route, navigation }: any) {
               key={s.id}
               style={[styles.chip, safeSvcIdx === i && styles.chipActive]}
               onPress={() => setServiceIdx(i)}
+              accessibilityRole="button"
+              accessibilityLabel={`Select ${s.name} service`}
             >
               <Text style={[styles.chipText, safeSvcIdx === i && styles.chipTextActive]}>
                 {s.name}
@@ -508,6 +526,8 @@ export function NewEstimateScreen({ route, navigation }: any) {
             style={[styles.btn, styles.btnGhost, saving && styles.btnDisabled]}
             onPress={handleSaveDraft}
             disabled={saving}
+            accessibilityRole="button"
+            accessibilityLabel="Save Draft"
           >
             <Text style={styles.btnGhostText}>{saving ? 'Saving…' : 'Save Draft'}</Text>
           </TouchableOpacity>
@@ -515,6 +535,8 @@ export function NewEstimateScreen({ route, navigation }: any) {
             style={[styles.btn, saving && styles.btnDisabled]}
             onPress={handleSavePending}
             disabled={saving}
+            accessibilityRole="button"
+            accessibilityLabel="Calculate Range"
           >
             {saving
               ? <ActivityIndicator color="#fff" />

@@ -99,7 +99,7 @@ function ManualLineModal({ visible, onSave, onClose }: ManualLineModalProps) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView style={ml.wrapper} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <TouchableOpacity style={ml.backdrop} activeOpacity={1} onPress={onClose} />
+        <TouchableOpacity style={ml.backdrop} activeOpacity={1} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
         <View style={ml.sheet}>
           <View style={ml.handle} />
           <Text style={ml.title}>Add Manual Line</Text>
@@ -127,6 +127,8 @@ function ManualLineModal({ visible, onSave, onClose }: ManualLineModalProps) {
               <TouchableOpacity key={b}
                 style={[ml.bucketChip, bucket === b && ml.bucketActive]}
                 onPress={() => setBucket(b)}
+                accessibilityRole="button"
+                accessibilityLabel={`${bucket === b ? 'Deselect' : 'Select'} ${BUCKET_LABELS[b]} bucket`}
               >
                 <Text style={[ml.bucketTxt, bucket === b && { color: T.accent }]}>
                   {BUCKET_ICONS[b]} {BUCKET_LABELS[b]}
@@ -136,10 +138,10 @@ function ManualLineModal({ visible, onSave, onClose }: ManualLineModalProps) {
           </View>
 
           <View style={ml.btnRow}>
-            <TouchableOpacity style={ml.cancelBtn} onPress={onClose}>
+            <TouchableOpacity style={ml.cancelBtn} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cancel">
               <Text style={ml.cancelTxt}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[ml.saveBtn, !canSave && ml.saveDis]} onPress={handleSave} disabled={!canSave}>
+            <TouchableOpacity style={[ml.saveBtn, !canSave && ml.saveDis]} onPress={handleSave} disabled={!canSave} accessibilityRole="button" accessibilityLabel="Add manual line">
               <Text style={ml.saveTxt}>Add</Text>
             </TouchableOpacity>
           </View>
@@ -229,7 +231,7 @@ export function PricingSummaryCard({ result, overrides, onOverrideChange }: Prop
       </View>
 
       {/* Bucket subtotals */}
-      <TouchableOpacity style={s.sectionRow} onPress={() => setBucketsExpanded(e => !e)}>
+      <TouchableOpacity style={s.sectionRow} onPress={() => setBucketsExpanded(e => !e)} accessibilityRole="button" accessibilityLabel={bucketsExpanded ? 'Collapse bucket breakdown' : 'Expand bucket breakdown'}>
         <Text style={s.sectionLabel}>Bucket breakdown</Text>
         <Text style={s.chevron}>{bucketsExpanded ? '▲' : '▼'}</Text>
       </TouchableOpacity>
@@ -258,7 +260,7 @@ export function PricingSummaryCard({ result, overrides, onOverrideChange }: Prop
       )}
 
       {/* Drivers list */}
-      <TouchableOpacity style={s.sectionRow} onPress={() => setExpanded(e => !e)}>
+      <TouchableOpacity style={s.sectionRow} onPress={() => setExpanded(e => !e)} accessibilityRole="button" accessibilityLabel={expanded ? 'Collapse drivers' : 'Expand drivers'}>
         <Text style={s.sectionLabel}>Why this price? ({allDrivers.length} driver{allDrivers.length !== 1 ? 's' : ''})</Text>
         <Text style={s.chevron}>{expanded ? '▲' : '▼'}</Text>
       </TouchableOpacity>
@@ -293,7 +295,7 @@ export function PricingSummaryCard({ result, overrides, onOverrideChange }: Prop
                     <Text style={s.driverRange}>{fmt(eMin)} – {fmt(eMax)}</Text>
                   )}
                   {d.editable && (
-                    <TouchableOpacity style={s.editBtn} onPress={() => setEditingDriver(d)}>
+                    <TouchableOpacity style={s.editBtn} onPress={() => setEditingDriver(d)} accessibilityRole="button" accessibilityLabel={`Edit ${d.label}`}>
                       <Text style={s.editBtnTxt}>Edit</Text>
                     </TouchableOpacity>
                   )}
@@ -303,7 +305,7 @@ export function PricingSummaryCard({ result, overrides, onOverrideChange }: Prop
           })}
 
           {/* Add manual line */}
-          <TouchableOpacity style={s.addLineBtn} onPress={() => setShowManual(true)}>
+          <TouchableOpacity style={s.addLineBtn} onPress={() => setShowManual(true)} accessibilityRole="button" accessibilityLabel="Add manual line item">
             <Text style={s.addLineTxt}>+ Add manual line</Text>
           </TouchableOpacity>
         </View>

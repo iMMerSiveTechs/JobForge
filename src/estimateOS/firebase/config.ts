@@ -13,7 +13,7 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 // @ts-ignore: getReactNativePersistence exists in the React Native bundle but is absent from TS declarations
 import { initializeAuth, getAuth, getReactNativePersistence, Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, persistentLocalCache, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getFunctions, Functions } from 'firebase/functions';
 import { getAI, GoogleAIBackend, AI } from 'firebase/ai';
@@ -56,7 +56,13 @@ try {
   _auth      = isNew
     ? initializeAuth(_app, { persistence: getReactNativePersistence(AsyncStorage) })
     : getAuth(_app);
-  _db        = getFirestore(_app);
+  // On first init, enable persistent local cache so field operators can work
+  // offline — writes queue locally and sync automatically when connectivity resumes.
+  // On hot reloads, getFirestore() returns the already-configured instance
+  // (initializeFirestore called twice on the same app would throw).
+  _db        = isNew
+    ? initializeFirestore(_app, { localCache: persistentLocalCache() })
+    : getFirestore(_app);
   _storage   = getStorage(_app);
   _functions = getFunctions(_app);
   // Gemini Developer API (free-tier on Spark plan). Uses GoogleAIBackend which

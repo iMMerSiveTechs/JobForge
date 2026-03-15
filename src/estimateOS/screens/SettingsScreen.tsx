@@ -235,7 +235,7 @@ export function SettingsScreen({ navigation }: any) {
           const label = creditBalance <= 0 ? 'No Credits' : creditBalance <= AI_CREDITS_LOW_THRESHOLD ? 'Credits Low' : 'Credits OK';
           return (
             <View style={s.card}>
-              <TouchableOpacity style={s.creditRow} onPress={() => setShowCredits(true)}>
+              <TouchableOpacity style={s.creditRow} onPress={() => setShowCredits(true)} accessibilityRole="button" accessibilityLabel="Buy AI credits">
                 <View style={[s.creditDot, { backgroundColor: color }]} />
                 <View style={{ flex: 1 }}>
                   <Text style={s.creditLabel}>{label}</Text>
@@ -253,14 +253,14 @@ export function SettingsScreen({ navigation }: any) {
         {/* ── Workflow Tools ────────────────────────────────────────────── */}
         <SectionHeader title="Workflow Tools" />
         <View style={s.card}>
-          <TouchableOpacity style={s.navRow} onPress={() => navigation?.navigate('CommTemplates')}>
+          <TouchableOpacity style={s.navRow} onPress={() => navigation?.navigate('CommTemplates')} accessibilityRole="button" accessibilityLabel="Manage communication templates">
             <View style={{ flex: 1 }}>
               <Text style={s.navLabel}>Communication Templates</Text>
               <Text style={s.navSub}>Edit follow-up, invoice, and check-in message templates</Text>
             </View>
             <Text style={s.navArrow}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[s.navRow, { borderTopWidth: 1, borderTopColor: T.border }]} onPress={() => navigation?.navigate('PricingRules')}>
+          <TouchableOpacity style={[s.navRow, { borderTopWidth: 1, borderTopColor: T.border }]} onPress={() => navigation?.navigate('PricingRules')} accessibilityRole="button" accessibilityLabel="Manage pricing rules">
             <View style={{ flex: 1 }}>
               <Text style={s.navLabel}>Pricing Rules</Text>
               <Text style={s.navSub}>Manage custom pricing rules and vertical overrides</Text>
@@ -272,7 +272,7 @@ export function SettingsScreen({ navigation }: any) {
         {/* ── Pilot Tools (internal admin) ────────────────────────────── */}
         <SectionHeader title="Pilot Tools" />
         <View style={s.card}>
-          <TouchableOpacity style={s.navRow} onPress={async () => {
+          <TouchableOpacity style={s.navRow} accessibilityRole="button" accessibilityLabel="Seed sample data" onPress={async () => {
             Alert.alert(
               'Seed Sample Data',
               'This will add sample customers, estimates, invoices, and reminders for testing. Existing data will not be deleted.',
@@ -295,7 +295,7 @@ export function SettingsScreen({ navigation }: any) {
             </View>
             <Text style={s.navArrow}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[s.navRow, { borderTopWidth: 1, borderTopColor: T.border }]} onPress={() => {
+          <TouchableOpacity style={[s.navRow, { borderTopWidth: 1, borderTopColor: T.border }]} accessibilityRole="button" accessibilityLabel="Clear all data" onPress={() => {
             Alert.alert(
               'Clear All Data',
               'This will permanently delete all customers, estimates, invoices, reminders, and intake drafts. Settings and business profile are preserved.\n\nThis cannot be undone.',
@@ -321,7 +321,7 @@ export function SettingsScreen({ navigation }: any) {
         </View>
 
         {/* ── Save ─────────────────────────────────────────────────────── */}
-        <TouchableOpacity style={s.saveBtn} onPress={handleSave} disabled={saving}>
+        <TouchableOpacity style={s.saveBtn} onPress={handleSave} disabled={saving} accessibilityRole="button" accessibilityLabel="Save settings">
           {saving ? <ActivityIndicator color="#fff" /> : <Text style={s.saveBtnTxt}>Save Settings</Text>}
         </TouchableOpacity>
 

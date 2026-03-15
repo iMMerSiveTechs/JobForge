@@ -45,7 +45,7 @@ function LibraryPickerModal({
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={lp.safe}>
         <View style={lp.header}>
-          <TouchableOpacity onPress={onClose}><Text style={lp.cancel}>Cancel</Text></TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancel" onPress={onClose}><Text style={lp.cancel}>Cancel</Text></TouchableOpacity>
           <Text style={lp.title}>Materials Library</Text>
           <View style={{ width: 60 }} />
         </View>
@@ -70,7 +70,7 @@ function LibraryPickerModal({
             contentContainerStyle={{ padding: 16 }}
             ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             renderItem={({ item }) => (
-              <TouchableOpacity style={lp.row} onPress={() => onPick(item)}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Add ${item.name}`} style={lp.row} onPress={() => onPick(item)}>
                 <View style={{ flex: 1 }}>
                   <Text style={lp.rowName}>{item.name}</Text>
                   <Text style={lp.rowSub}>{item.unit}{item.vendor ? ` · ${item.vendor}` : ''}</Text>
@@ -115,7 +115,7 @@ function MaterialRow({
     <View style={r.wrap}>
       <View style={r.topRow}>
         <Text style={r.name} numberOfLines={1}>{item.name}</Text>
-        <TouchableOpacity onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Remove ${item.name}`} onPress={onDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Text style={r.del}>✕</Text>
         </TouchableOpacity>
       </View>
@@ -172,7 +172,7 @@ function AddCustomRow({ onAdd }: { onAdd: (item: MaterialLineItem) => void }) {
 
   if (!visible) {
     return (
-      <TouchableOpacity style={ac.trigger} onPress={() => setVisible(true)}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add custom material" style={ac.trigger} onPress={() => setVisible(true)}>
         <Text style={ac.triggerTxt}>+ Add Custom</Text>
       </TouchableOpacity>
     );
@@ -186,10 +186,12 @@ function AddCustomRow({ onAdd }: { onAdd: (item: MaterialLineItem) => void }) {
         <TextInput style={[ac.input, { flex: 1 }]} value={qty} onChangeText={setQty} placeholder="Qty" placeholderTextColor={T.muted} keyboardType="numeric" />
       </View>
       <View style={ac.btnRow}>
-        <TouchableOpacity style={ac.cancel} onPress={() => { reset(); setVisible(false); }}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancel" style={ac.cancel} onPress={() => { reset(); setVisible(false); }}>
           <Text style={ac.cancelTxt}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Save material"
           style={ac.save}
           onPress={() => {
             if (!name.trim()) return;
@@ -252,7 +254,7 @@ export function MaterialsSection({ items, onChange }: Props) {
       )}
 
       <View style={ms.actions}>
-        <TouchableOpacity style={ms.libBtn} onPress={() => setShowLibrary(true)}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add from library" style={ms.libBtn} onPress={() => setShowLibrary(true)}>
           <Text style={ms.libBtnTxt}>📦 From Library</Text>
         </TouchableOpacity>
         <AddCustomRow onAdd={item => onChange([...items, item])} />

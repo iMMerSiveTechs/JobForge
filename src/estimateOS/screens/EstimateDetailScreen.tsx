@@ -139,7 +139,10 @@ function AiScanHistorySection({ history, onRevert }: { history: AiScanRecord[]; 
               <TouchableOpacity style={aih.btn} onPress={() => Alert.alert('Revert Answers', 'Replace current answers with this AI snapshot?', [
                 { text: 'Cancel', style: 'cancel' },
                 { text: 'Revert', style: 'destructive', onPress: () => onRevert(rec) },
-              ])}>
+              ])}
+                accessibilityRole="button"
+                accessibilityLabel={`Revert to AI snapshot from ${rec.createdAt}`}
+              >
                 <Text style={aih.btnTxt}>Revert</Text>
               </TouchableOpacity>
             </View>
@@ -147,7 +150,10 @@ function AiScanHistorySection({ history, onRevert }: { history: AiScanRecord[]; 
         );
       })}
       {history.length > 2 && (
-        <TouchableOpacity onPress={() => setExpanded(e => !e)}>
+        <TouchableOpacity onPress={() => setExpanded(e => !e)}
+          accessibilityRole="button"
+          accessibilityLabel={expanded ? 'Show fewer scans' : 'View all scans'}
+        >
           <Text style={aih.more}>{expanded ? 'Show less' : `View all ${history.length} scans`}</Text>
         </TouchableOpacity>
       )}
@@ -412,6 +418,8 @@ export function EstimateDetailScreen({ route, navigation }: any) {
             style={[s.nextActionCard, nextAction.urgent && s.nextActionCardUrgent]}
             onPress={handleNextAction}
             disabled={saving || generatingPdf}
+            accessibilityRole="button"
+            accessibilityLabel={nextAction.label}
           >
             <Text style={s.nextActionIcon}>{nextAction.icon}</Text>
             <View style={{ flex: 1 }}>
@@ -445,6 +453,8 @@ export function EstimateDetailScreen({ route, navigation }: any) {
                 key={st}
                 style={[s.statusBtn, active && { backgroundColor: c.bg, borderColor: c.border }]}
                 onPress={() => handleStatusChange(st)}
+                accessibilityRole="button"
+                accessibilityLabel={`Set status to ${c.label}`}
               >
                 <Text style={[s.statusBtnTxt, active && { color: c.text }]}>{c.label}</Text>
               </TouchableOpacity>
@@ -479,10 +489,16 @@ export function EstimateDetailScreen({ route, navigation }: any) {
 
         {/* Quick comms */}
         <View style={s.commRow}>
-          <TouchableOpacity style={s.commBtn} onPress={() => setShowReminder(true)}>
+          <TouchableOpacity style={s.commBtn} onPress={() => setShowReminder(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Reminder"
+          >
             <Text style={s.commBtnTxt}>⏰ Reminder</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.commBtn} onPress={() => { setCommIntent('follow_up'); setShowComm(true); }}>
+          <TouchableOpacity style={s.commBtn} onPress={() => { setCommIntent('follow_up'); setShowComm(true); }}
+            accessibilityRole="button"
+            accessibilityLabel="Follow Up"
+          >
             <Text style={s.commBtnTxt}>✉️ Follow Up</Text>
           </TouchableOpacity>
         </View>
@@ -501,6 +517,8 @@ export function EstimateDetailScreen({ route, navigation }: any) {
                   style={s.driverRow}
                   onPress={() => hasExplanation && setExpandedDrivers(prev => ({ ...prev, [d.id]: !prev[d.id] }))}
                   activeOpacity={hasExplanation ? 0.7 : 1}
+                  accessibilityRole="button"
+                  accessibilityLabel={isExpanded ? `Collapse ${d.label}` : `Expand ${d.label}`}
                 >
                   <View style={{ flex: 1, marginRight: 10 }}>
                     <Text style={s.driverLabel}>{d.label}</Text>
@@ -531,7 +549,10 @@ export function EstimateDetailScreen({ route, navigation }: any) {
           <>
             <SectionHeader title={`Invoices (${invoices.length})`} />
             {invoices.map(inv => (
-              <TouchableOpacity key={inv.id} style={s.invoiceRow} onPress={() => navigation.navigate('Invoice', { invoiceId: inv.id })}>
+              <TouchableOpacity key={inv.id} style={s.invoiceRow} onPress={() => navigation.navigate('Invoice', { invoiceId: inv.id })}
+                accessibilityRole="button"
+                accessibilityLabel={`Open invoice ${inv.invoiceNumber}`}
+              >
                 <View style={{ flex: 1 }}>
                   <Text style={s.invoiceNum}>{inv.invoiceNumber}</Text>
                   <Text style={s.invoiceSub}>{inv.status.charAt(0).toUpperCase() + inv.status.slice(1)} · {inv.paymentTerms}</Text>
@@ -556,11 +577,17 @@ export function EstimateDetailScreen({ route, navigation }: any) {
         {/* Actions */}
         <SectionHeader title="Actions" />
         <View style={s.actions}>
-          <TouchableOpacity style={s.actionBtn} onPress={() => navigation.navigate('NewEstimate', { estimateId: estimate.id })}>
+          <TouchableOpacity style={s.actionBtn} onPress={() => navigation.navigate('NewEstimate', { estimateId: estimate.id })}
+            accessibilityRole="button"
+            accessibilityLabel="Edit Job"
+          >
             <Text style={s.actionIcon}>✏️</Text>
             <Text style={s.actionTxt}>Edit Job</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.actionBtn} onPress={handleSendEstimate} disabled={generatingPdf}>
+          <TouchableOpacity style={s.actionBtn} onPress={handleSendEstimate} disabled={generatingPdf}
+            accessibilityRole="button"
+            accessibilityLabel="Send Quote"
+          >
             {generatingPdf ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.actionIcon}>📤</Text>}
             <View style={{ flex: 1 }}>
               <Text style={s.actionTxt}>Send Quote</Text>
@@ -569,13 +596,18 @@ export function EstimateDetailScreen({ route, navigation }: any) {
               )}
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={s.actionBtn} onPress={handleCreateInvoice} disabled={saving}>
+          <TouchableOpacity style={s.actionBtn} onPress={handleCreateInvoice} disabled={saving}
+            accessibilityRole="button"
+            accessibilityLabel="Create Invoice"
+          >
             {saving ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.actionIcon}>🧾</Text>}
             <Text style={s.actionTxt}>Create Invoice</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={s.actionBtn}
             onPress={() => navigation.navigate('AiSiteAnalysis', { estimateId: estimate.id, verticalId: estimate.verticalId, serviceId: estimate.serviceId })}
+            accessibilityRole="button"
+            accessibilityLabel="Site Photos / AI Analysis"
           >
             <Text style={s.actionIcon}>📸</Text>
             <View style={{ flex: 1 }}>
@@ -585,11 +617,17 @@ export function EstimateDetailScreen({ route, navigation }: any) {
               )}
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={s.actionBtn} onPress={handleExportPdf} disabled={generatingPdf}>
+          <TouchableOpacity style={s.actionBtn} onPress={handleExportPdf} disabled={generatingPdf}
+            accessibilityRole="button"
+            accessibilityLabel="Export PDF"
+          >
             {generatingPdf ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.actionIcon}>📄</Text>}
             <Text style={s.actionTxt}>Export PDF</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[s.actionBtn, s.actionBtnDanger]} onPress={handleDelete}>
+          <TouchableOpacity style={[s.actionBtn, s.actionBtnDanger]} onPress={handleDelete}
+            accessibilityRole="button"
+            accessibilityLabel="Delete"
+          >
             <Text style={s.actionIcon}>🗑️</Text>
             <Text style={[s.actionTxt, { color: T.red }]}>Delete</Text>
           </TouchableOpacity>

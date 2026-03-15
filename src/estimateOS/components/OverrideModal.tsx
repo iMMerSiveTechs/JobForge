@@ -59,12 +59,12 @@ export function OverrideModal({ driver, visible, overrides, onSave, onClose }: P
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close">
           <TouchableOpacity activeOpacity={1} style={s.sheet}>
             <View style={s.handle} />
             <Text style={s.title} numberOfLines={2}>{driver.label}</Text>
 
-            <TouchableOpacity onPress={() => setShowExpl(e => !e)}>
+            <TouchableOpacity onPress={() => setShowExpl(e => !e)} accessibilityRole="button" accessibilityLabel={showExpl ? 'Hide explanation' : 'Show explanation'}>
               <Text style={s.explToggle}>💡 {showExpl ? 'Hide explanation' : 'Why this line?'}</Text>
             </TouchableOpacity>
             {showExpl && (
@@ -122,14 +122,14 @@ export function OverrideModal({ driver, visible, overrides, onSave, onClose }: P
 
             <View style={s.btnRow}>
               {hasExisting && (
-                <TouchableOpacity style={s.clearBtn} onPress={handleClear}>
+                <TouchableOpacity style={s.clearBtn} onPress={handleClear} accessibilityRole="button" accessibilityLabel="Reset to computed values">
                   <Text style={s.clearTxt}>Reset</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity style={s.cancelBtn} onPress={onClose}>
+              <TouchableOpacity style={s.cancelBtn} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cancel">
                 <Text style={s.cancelTxt}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={s.saveBtn} onPress={handleSave}>
+              <TouchableOpacity style={s.saveBtn} onPress={handleSave} accessibilityRole="button" accessibilityLabel="Apply override">
                 <Text style={s.saveTxt}>Apply</Text>
               </TouchableOpacity>
             </View>

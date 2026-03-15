@@ -66,6 +66,8 @@ export function FollowUpPanel({
       <View style={s.row}>
         {/* Status badge + tap to change */}
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Change follow-up status"
           style={[s.badge, { backgroundColor: colors.bg, borderColor: colors.border }]}
           onPress={() => setShowStatusPicker(true)}
         >
@@ -74,7 +76,7 @@ export function FollowUpPanel({
         </TouchableOpacity>
 
         {/* Quick actions */}
-        <TouchableOpacity style={s.contactedBtn} onPress={onMarkContacted}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Mark as contacted" style={s.contactedBtn} onPress={onMarkContacted}>
           <Text style={s.contactedTxt}>✓ Contacted</Text>
         </TouchableOpacity>
       </View>
@@ -85,7 +87,7 @@ export function FollowUpPanel({
       )}
 
       {/* Next action */}
-      <TouchableOpacity style={[s.nextAction, isOverdue && s.nextActionOverdue]} onPress={() => { setDraftDate(nextActionAt?.slice(0, 10) ?? ''); setDraftNote(nextActionNote ?? ''); setShowNextAction(true); }}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Set next action" style={[s.nextAction, isOverdue && s.nextActionOverdue]} onPress={() => { setDraftDate(nextActionAt?.slice(0, 10) ?? ''); setDraftNote(nextActionNote ?? ''); setShowNextAction(true); }}>
         <View style={{ flex: 1 }}>
           <Text style={s.nextActionLabel}>{nextActionAt ? 'Next Action' : '+ Set Next Action'}</Text>
           {nextActionAt && (

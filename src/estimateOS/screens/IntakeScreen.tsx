@@ -224,6 +224,8 @@ export function IntakeScreen({ navigation }: any) {
                     key={st}
                     style={[s.chip, serviceType === st && s.chipActive]}
                     onPress={() => { setServiceType(st); setErrors(e => ({ ...e, serviceType: '' })); }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select service type: ${st}`}
                   >
                     <Text style={[s.chipTxt, serviceType === st && s.chipTxtActive]}>{st}</Text>
                   </TouchableOpacity>
@@ -238,6 +240,8 @@ export function IntakeScreen({ navigation }: any) {
                     key={u}
                     style={[s.chip, urgency === u && s.chipActive]}
                     onPress={() => setUrgency(u)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set urgency to ${LEAD_URGENCY_LABELS[u]}`}
                   >
                     <Text style={[s.chipTxt, urgency === u && s.chipTxtActive]}>{LEAD_URGENCY_LABELS[u]}</Text>
                   </TouchableOpacity>
@@ -270,6 +274,8 @@ export function IntakeScreen({ navigation }: any) {
                     key={src}
                     style={[s.chip, referralSource === src && s.chipActive]}
                     onPress={() => setReferralSource(referralSource === src ? '' : src)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select referral source: ${src}`}
                   >
                     <Text style={[s.chipTxt, referralSource === src && s.chipTxtActive]}>{src}</Text>
                   </TouchableOpacity>
@@ -292,13 +298,13 @@ export function IntakeScreen({ navigation }: any) {
         {/* Nav + actions */}
         <View style={s.footer}>
           {step > 1 && (
-            <TouchableOpacity style={s.backBtn} onPress={prevStep}>
+            <TouchableOpacity style={s.backBtn} onPress={prevStep} accessibilityRole="button" accessibilityLabel="Go back">
               <Text style={s.backTxt}>Back</Text>
             </TouchableOpacity>
           )}
 
           {step < 3 ? (
-            <TouchableOpacity style={s.nextBtn} onPress={nextStep}>
+            <TouchableOpacity style={s.nextBtn} onPress={nextStep} accessibilityRole="button" accessibilityLabel="Continue">
               <Text style={s.nextTxt}>Next →</Text>
             </TouchableOpacity>
           ) : (
@@ -307,6 +313,8 @@ export function IntakeScreen({ navigation }: any) {
                 style={s.actionSecondary}
                 onPress={() => saveDraft('save')}
                 disabled={saving}
+                accessibilityRole="button"
+                accessibilityLabel="Save draft"
               >
                 <Text style={s.actionSecondaryTxt}>Save Draft</Text>
               </TouchableOpacity>
@@ -314,6 +322,8 @@ export function IntakeScreen({ navigation }: any) {
                 style={s.actionPrimary}
                 onPress={() => saveDraft('convert_customer')}
                 disabled={saving}
+                accessibilityRole="button"
+                accessibilityLabel="Create customer"
               >
                 {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={s.actionPrimaryTxt}>Create Customer</Text>}
               </TouchableOpacity>
@@ -321,6 +331,8 @@ export function IntakeScreen({ navigation }: any) {
                 style={[s.actionPrimary, { backgroundColor: T.green }]}
                 onPress={() => saveDraft('convert_estimate')}
                 disabled={saving}
+                accessibilityRole="button"
+                accessibilityLabel="Start estimate"
               >
                 {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={s.actionPrimaryTxt}>Start Estimate →</Text>}
               </TouchableOpacity>

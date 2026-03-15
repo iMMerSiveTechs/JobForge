@@ -99,7 +99,7 @@ function DemoModal({ visible, onClose }: { visible: boolean; onClose: () => void
           <Text style={dm.hint}>
             Media was accepted and queued. Analysis will run when the AI backend is enabled.
           </Text>
-          <TouchableOpacity style={dm.btn} onPress={onClose}>
+          <TouchableOpacity style={dm.btn} onPress={onClose} accessibilityRole="button" accessibilityLabel="Exit Demo">
             <Text style={dm.btnTxt}>Exit</Text>
           </TouchableOpacity>
         </View>
@@ -314,7 +314,7 @@ function buildSimulatedResult(
 function HistoryItem({ record, onView }: { record: AiAnalysisRecord; onView: () => void }) {
   const date = new Date(record.createdAt);
   return (
-    <TouchableOpacity style={hi.card} onPress={onView} activeOpacity={0.75}>
+    <TouchableOpacity style={hi.card} onPress={onView} activeOpacity={0.75} accessibilityRole="button" accessibilityLabel={`View AI analysis from ${record.createdAt}`}>
       <View style={hi.header}>
         <Text style={hi.date}>{date.toLocaleDateString()} {date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
         <View style={hi.meta}>
@@ -423,7 +423,7 @@ function ResultModal({ record, jobs, visible, onClose, onApply, onCheckpoint }: 
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={rm.safe}>
         <View style={rm.header}>
-          <TouchableOpacity onPress={onClose}><Text style={rm.close}>Done</Text></TouchableOpacity>
+          <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Done"><Text style={rm.close}>Done</Text></TouchableOpacity>
           <Text style={rm.title}>AI Analysis Report</Text>
           <View style={{ width: 50 }} />
         </View>
@@ -511,13 +511,13 @@ function ResultModal({ record, jobs, visible, onClose, onApply, onCheckpoint }: 
           </View>
 
           {onCheckpoint && (
-            <TouchableOpacity style={rm.checkpointBtn} onPress={() => { onCheckpoint(record); onClose(); }}>
+            <TouchableOpacity style={rm.checkpointBtn} onPress={() => { onCheckpoint(record); onClose(); }} accessibilityRole="button" accessibilityLabel="Save Checkpoint">
               <Text style={rm.checkpointBtnTxt}>💾 Save Checkpoint</Text>
               <Text style={rm.checkpointBtnSub}>Apply answers without leaving this screen</Text>
             </TouchableOpacity>
           )}
           {onApply && (
-            <TouchableOpacity style={[rm.applyBtn, onCheckpoint && { marginTop: 10 }]} onPress={() => { onApply(record); onClose(); }}>
+            <TouchableOpacity style={[rm.applyBtn, onCheckpoint && { marginTop: 10 }]} onPress={() => { onApply(record); onClose(); }} accessibilityRole="button" accessibilityLabel="Apply to Estimate">
               <Text style={rm.applyBtnTxt}>Apply to Estimate →</Text>
               <Text style={rm.applyBtnSub}>
                 {record.suggestedAdjustments.filter(a => a.questionId).length} answers will be pre-filled
@@ -582,13 +582,13 @@ function AnnotateModal({ jobId, focusNote, visible, onSave, onClose }: {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <TouchableOpacity style={am.overlay} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity style={am.overlay} activeOpacity={1} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close annotation">
           <TouchableOpacity activeOpacity={1} style={am.sheet}>
             <Text style={am.title}>Annotate Image</Text>
             <Text style={am.sub}>Add a focus directive for just this image</Text>
             <View style={am.presetsRow}>
               {['roof pitch', 'measure area', 'damage', 'material type', 'access'].map(p => (
-                <TouchableOpacity key={p} style={am.preset} onPress={() => setNote(p)}>
+                <TouchableOpacity key={p} style={am.preset} onPress={() => setNote(p)} accessibilityRole="button" accessibilityLabel={`Use preset focus: ${p}`}>
                   <Text style={am.presetTxt}>{p}</Text>
                 </TouchableOpacity>
               ))}
@@ -599,10 +599,10 @@ function AnnotateModal({ jobId, focusNote, visible, onSave, onClose }: {
               autoFocus autoCapitalize="none"
             />
             <View style={am.btnRow}>
-              <TouchableOpacity style={am.cancelBtn} onPress={onClose}>
+              <TouchableOpacity style={am.cancelBtn} onPress={onClose} accessibilityRole="button" accessibilityLabel="Cancel">
                 <Text style={am.cancelTxt}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={am.saveBtn} onPress={() => { if (jobId) onSave(jobId, note); onClose(); }}>
+              <TouchableOpacity style={am.saveBtn} onPress={() => { if (jobId) onSave(jobId, note); onClose(); }} accessibilityRole="button" accessibilityLabel="Apply annotation note">
                 <Text style={am.saveTxt}>Apply Note</Text>
               </TouchableOpacity>
             </View>
@@ -865,7 +865,7 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
               <Text style={s.title}>AI Site Analysis</Text>
               <Text style={s.sub}>{vertical ? `${vertical.icon} ${vertical.name}` : 'Upload photos or video for AI insights'}</Text>
             </View>
-            <TouchableOpacity onPress={() => setShowHistory(true)} style={s.histBtn}>
+            <TouchableOpacity onPress={() => setShowHistory(true)} style={s.histBtn} accessibilityRole="button" accessibilityLabel="Show Analysis History">
               <Text style={s.histBtnTxt}>📋</Text>
             </TouchableOpacity>
           </View>
