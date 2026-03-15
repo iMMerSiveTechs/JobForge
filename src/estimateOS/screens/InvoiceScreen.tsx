@@ -554,7 +554,7 @@ export function InvoiceScreen({ route, navigation }: any) {
                   await save({ status: 'void', voidedAt: now });
                 }},
               ]
-            )} disabled={saving}>
+            )} disabled={saving} accessibilityRole="button" accessibilityLabel="Void this invoice">
               <Text style={s.deleteBtnTxt}>Void Invoice</Text>
             </TouchableOpacity>
           )}
@@ -562,7 +562,7 @@ export function InvoiceScreen({ route, navigation }: any) {
           <TouchableOpacity style={s.deleteBtn} onPress={() => Alert.alert('Delete Invoice', 'Delete this invoice?', [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Delete', style: 'destructive', onPress: async () => { await InvoiceRepository.deleteInvoice(invoiceId); navigation.goBack(); }},
-          ])}>
+          ])} accessibilityRole="button" accessibilityLabel="Delete this invoice">
             <Text style={s.deleteBtnTxt}>Delete Invoice</Text>
           </TouchableOpacity>
         </View>
