@@ -51,9 +51,9 @@ function CustomerFormModal({ visible, onSave, onClose }: {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <SafeAreaView style={fm.safe}>
           <View style={fm.header}>
-            <TouchableOpacity onPress={() => { reset(); onClose(); }}><Text style={fm.cancel}>Cancel</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => { reset(); onClose(); }} accessibilityRole="button" accessibilityLabel="Cancel"><Text style={fm.cancel}>Cancel</Text></TouchableOpacity>
             <Text style={fm.title}>New Customer</Text>
-            <TouchableOpacity onPress={save} disabled={saving}>
+            <TouchableOpacity onPress={save} disabled={saving} accessibilityRole="button" accessibilityLabel="Save changes">
               {saving ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={fm.save}>Save</Text>}
             </TouchableOpacity>
           </View>
@@ -212,6 +212,8 @@ export function CustomerListScreen({ navigation }: any) {
             key={String(f.key)}
             style={[s.chip, statusFilter === f.key && s.chipActive]}
             onPress={() => setStatusFilter(f.key)}
+            accessibilityRole="button"
+            accessibilityLabel={`Filter by ${f.label}`}
           >
             <Text style={[s.chipTxt, statusFilter === f.key && s.chipTxtActive]}>{f.label}</Text>
           </TouchableOpacity>
@@ -222,7 +224,7 @@ export function CustomerListScreen({ navigation }: any) {
       <View style={s.sortRow}>
         <Text style={s.sortLabel}>Sort:</Text>
         {SORT_OPTIONS.map(o => (
-          <TouchableOpacity key={o.key} onPress={() => setSortKey(o.key)} style={[s.sortPill, sortKey === o.key && s.sortPillActive]}>
+          <TouchableOpacity key={o.key} onPress={() => setSortKey(o.key)} style={[s.sortPill, sortKey === o.key && s.sortPillActive]} accessibilityRole="button" accessibilityLabel={`Sort by ${o.label}`}>
             <Text style={[s.sortPillTxt, sortKey === o.key && s.sortPillTxtActive]}>{o.label}</Text>
           </TouchableOpacity>
         ))}
@@ -235,7 +237,7 @@ export function CustomerListScreen({ navigation }: any) {
           <Text style={s.emptyIcon}>⚠️</Text>
           <Text style={s.emptyTitle}>Couldn't load customers</Text>
           <Text style={s.emptySub}>Check your connection and tap to retry</Text>
-          <TouchableOpacity style={s.emptyBtn} onPress={load}>
+          <TouchableOpacity style={s.emptyBtn} onPress={load} accessibilityRole="button" accessibilityLabel="Retry">
             <Text style={s.emptyBtnTxt}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -245,7 +247,7 @@ export function CustomerListScreen({ navigation }: any) {
           <Text style={s.emptyTitle}>{search || statusFilter ? 'No matches' : 'No customers yet'}</Text>
           <Text style={s.emptySub}>Add customers to link them to estimates and invoices</Text>
           {!search && !statusFilter && (
-            <TouchableOpacity style={s.emptyBtn} onPress={() => setShowCreate(true)}>
+            <TouchableOpacity style={s.emptyBtn} onPress={() => setShowCreate(true)} accessibilityRole="button" accessibilityLabel="Add first customer">
               <Text style={s.emptyBtnTxt}>+ Add First Customer</Text>
             </TouchableOpacity>
           )}
@@ -261,6 +263,8 @@ export function CustomerListScreen({ navigation }: any) {
               style={[s.row, { borderLeftColor: followUpColor(item.followUpStatus), borderLeftWidth: 3 }]}
               onPress={() => navigation.navigate('CustomerDetail', { customerId: item.id })}
               onLongPress={() => deleteCustomer(item.id, item.name)}
+              accessibilityRole="button"
+              accessibilityLabel={`View customer ${item.name}`}
             >
               <View style={s.avatar}>
                 <Text style={s.avatarTxt}>{item.name.charAt(0).toUpperCase()}</Text>
@@ -290,7 +294,7 @@ export function CustomerListScreen({ navigation }: any) {
         />
       )}
 
-      <TouchableOpacity style={s.fab} onPress={() => setShowCreate(true)}>
+      <TouchableOpacity style={s.fab} onPress={() => setShowCreate(true)} accessibilityRole="button" accessibilityLabel="Add new customer">
         <Text style={s.fabTxt}>+</Text>
       </TouchableOpacity>
 

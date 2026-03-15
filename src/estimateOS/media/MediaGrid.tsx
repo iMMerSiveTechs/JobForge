@@ -74,6 +74,8 @@ export function MediaGrid({ onJobsChange }: Props) {
           {hasVideo ? ' · 1 video' : ` · 1 video ≤${MAX_VIDEO_SECONDS}s`}
         </Text>
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Show info"
           style={s.infoBtn}
           onPress={() => setShowTooltip(t => !t)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -94,7 +96,7 @@ export function MediaGrid({ onJobsChange }: Props) {
       {errorBanner && (
         <View style={s.errorBanner}>
           <Text style={s.errorTxt}>⚠ {errorBanner}</Text>
-          <TouchableOpacity onPress={() => setErrorBanner(null)}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Dismiss error" onPress={() => setErrorBanner(null)}>
             <Text style={s.errorDismiss}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -115,7 +117,7 @@ export function MediaGrid({ onJobsChange }: Props) {
           <Text style={s.emptyIcon}>📸</Text>
           <Text style={s.emptyTitle}>Add photos or a short video</Text>
           <Text style={s.emptySub}>Up to {MAX_PHOTOS} photos · 1 video ≤{MAX_VIDEO_SECONDS}s</Text>
-          <TouchableOpacity style={s.addMediaBtn} onPress={() => setSheetOpen(true)}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add media" style={s.addMediaBtn} onPress={() => setSheetOpen(true)}>
             <Text style={s.addMediaTxt}>+ Add Media</Text>
           </TouchableOpacity>
         </View>
@@ -137,7 +139,7 @@ export function MediaGrid({ onJobsChange }: Props) {
           </View>
 
           {/* Add Media button (inline, when items exist) */}
-          <TouchableOpacity style={s.addMoreBtn} onPress={() => setSheetOpen(true)}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add more media" style={s.addMoreBtn} onPress={() => setSheetOpen(true)}>
             <Text style={s.addMoreTxt}>+ Add Media</Text>
           </TouchableOpacity>
         </View>

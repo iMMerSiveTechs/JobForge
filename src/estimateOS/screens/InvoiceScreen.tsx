@@ -99,6 +99,8 @@ function RecordPaymentModal({ visible, remaining, onClose, onSave }: {
                   key={m}
                   style={[rp.methodChip, method === m && rp.methodChipActive]}
                   onPress={() => setMethod(prev => prev === m ? '' : m)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${m} payment method`}
                 >
                   <Text style={[rp.methodTxt, method === m && rp.methodTxtActive]}>{m}</Text>
                 </TouchableOpacity>
@@ -109,10 +111,10 @@ function RecordPaymentModal({ visible, remaining, onClose, onSave }: {
             <TextInput style={rp.input} value={note} onChangeText={setNote} placeholder="Check #, reference, etc." placeholderTextColor={T.muted} />
 
             <View style={rp.btnRow}>
-              <TouchableOpacity style={rp.cancelBtn} onPress={() => { reset(); onClose(); }}>
+              <TouchableOpacity style={rp.cancelBtn} onPress={() => { reset(); onClose(); }} accessibilityRole="button" accessibilityLabel="Cancel recording payment">
                 <Text style={rp.cancelTxt}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={rp.saveBtn} onPress={handleSave}>
+              <TouchableOpacity style={rp.saveBtn} onPress={handleSave} accessibilityRole="button" accessibilityLabel="Record payment">
                 <Text style={rp.saveTxt}>Record</Text>
               </TouchableOpacity>
             </View>
@@ -424,7 +426,7 @@ export function InvoiceScreen({ route, navigation }: any) {
                 <TextInput style={[s.lineInput, { flex: 2 }]} value={li.label} onChangeText={v => updateLineItem(idx, 'label', v)} onBlur={() => save()} />
                 <TextInput style={[s.lineInput, { width: 70 }]} value={String(li.quantity)} onChangeText={v => updateLineItem(idx, 'quantity', v)} keyboardType="numeric" onBlur={() => save()} />
                 <TextInput style={[s.lineInput, { width: 90 }]} value={String(li.unitCost)} onChangeText={v => updateLineItem(idx, 'unitCost', v)} keyboardType="numeric" onBlur={() => save()} />
-                <TouchableOpacity onPress={() => removeLineItem(idx)}>
+                <TouchableOpacity onPress={() => removeLineItem(idx)} accessibilityRole="button" accessibilityLabel="Delete line item">
                   <Text style={s.lineDel}>✕</Text>
                 </TouchableOpacity>
               </>
@@ -438,7 +440,7 @@ export function InvoiceScreen({ route, navigation }: any) {
           </View>
         ))}
         {canEdit && (
-          <TouchableOpacity style={s.addLineBtn} onPress={addLineItem}>
+          <TouchableOpacity style={s.addLineBtn} onPress={addLineItem} accessibilityRole="button" accessibilityLabel="Add line item">
             <Text style={s.addLineTxt}>+ Add Line Item</Text>
           </TouchableOpacity>
         )}
@@ -497,45 +499,45 @@ export function InvoiceScreen({ route, navigation }: any) {
         {/* Actions */}
         <SectionHeader title="Actions" />
         <View style={s.actionsGroup}>
-          <TouchableOpacity style={s.primaryBtn} onPress={handleSendInvoice} disabled={generatingPdf}>
+          <TouchableOpacity style={s.primaryBtn} onPress={handleSendInvoice} disabled={generatingPdf} accessibilityRole="button" accessibilityLabel="Send invoice">
             {generatingPdf ? <ActivityIndicator color="#fff" /> : <Text style={s.primaryBtnTxt}>📤 Send Invoice</Text>}
           </TouchableOpacity>
 
-          <TouchableOpacity style={s.shareBtn} onPress={handleExportPdf} disabled={generatingPdf}>
+          <TouchableOpacity style={s.shareBtn} onPress={handleExportPdf} disabled={generatingPdf} accessibilityRole="button" accessibilityLabel="Export invoice as PDF">
             {generatingPdf ? <ActivityIndicator color={T.text} /> : <Text style={s.shareBtnTxt}>📄 Export PDF</Text>}
           </TouchableOpacity>
 
           {/* Payment reminder (when sent/partially_paid/overdue) */}
           {canReceivePayment && (
-            <TouchableOpacity style={[s.actionBtn, s.actionBtnAmber]} onPress={handlePaymentReminder} disabled={generatingPdf}>
+            <TouchableOpacity style={[s.actionBtn, s.actionBtnAmber]} onPress={handlePaymentReminder} disabled={generatingPdf} accessibilityRole="button" accessibilityLabel="Send payment reminder">
               <Text style={[s.actionBtnTxt, { color: T.amberHi }]}>💬 Send Payment Reminder</Text>
             </TouchableOpacity>
           )}
 
           {/* Draft → Sent (manual status, if not using Send Invoice flow) */}
           {invoice.status === 'draft' && (
-            <TouchableOpacity style={s.actionBtn} onPress={() => markStatus('sent')} disabled={saving}>
+            <TouchableOpacity style={s.actionBtn} onPress={() => markStatus('sent')} disabled={saving} accessibilityRole="button" accessibilityLabel="Mark invoice as sent">
               {saving ? <ActivityIndicator color={T.accent} /> : <Text style={s.actionBtnTxt}>Mark as Sent</Text>}
             </TouchableOpacity>
           )}
 
           {/* Record partial / full payment */}
           {canReceivePayment && (
-            <TouchableOpacity style={[s.actionBtn, s.actionBtnGreen]} onPress={() => setShowRecordPayment(true)} disabled={saving}>
+            <TouchableOpacity style={[s.actionBtn, s.actionBtnGreen]} onPress={() => setShowRecordPayment(true)} disabled={saving} accessibilityRole="button" accessibilityLabel="Record payment received">
               <Text style={[s.actionBtnTxt, { color: '#fff' }]}>💵 Record Payment</Text>
             </TouchableOpacity>
           )}
 
           {/* Quick mark fully paid (when sent/overdue and no partial yet) */}
           {(invoice.status === 'sent' || invoice.status === 'overdue') && amountPaid === 0 && (
-            <TouchableOpacity style={s.actionBtn} onPress={() => markStatus('paid')} disabled={saving}>
+            <TouchableOpacity style={s.actionBtn} onPress={() => markStatus('paid')} disabled={saving} accessibilityRole="button" accessibilityLabel="Mark invoice as fully paid">
               {saving ? <ActivityIndicator color={T.accent} /> : <Text style={s.actionBtnTxt}>Mark as Fully Paid ✓</Text>}
             </TouchableOpacity>
           )}
 
           {/* Mark overdue (when sent) */}
           {invoice.status === 'sent' && (
-            <TouchableOpacity style={[s.actionBtn, s.actionBtnAmber]} onPress={markOverdue} disabled={saving}>
+            <TouchableOpacity style={[s.actionBtn, s.actionBtnAmber]} onPress={markOverdue} disabled={saving} accessibilityRole="button" accessibilityLabel="Mark invoice as overdue">
               <Text style={[s.actionBtnTxt, { color: T.amberHi }]}>⚠️ Mark as Overdue</Text>
             </TouchableOpacity>
           )}
