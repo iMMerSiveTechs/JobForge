@@ -88,8 +88,9 @@ export function ReviewSendScreen({ route, navigation }: any) {
   if (loading) return <SafeAreaView style={s.safe}><ActivityIndicator style={{ marginTop: 60 }} color={T.accent} /></SafeAreaView>;
   if (!estimate) return <SafeAreaView style={s.safe}><Text style={s.notFound}>Estimate not found.</Text></SafeAreaView>;
 
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const parseEmails = (raw: string) =>
-    raw.split(',').map(e => e.trim()).filter(e => e.includes('@'));
+    raw.split(',').map(e => e.trim()).filter(e => EMAIL_REGEX.test(e));
 
   const handleSend = async () => {
     const emails = parseEmails(recipients);

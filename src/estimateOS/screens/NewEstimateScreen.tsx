@@ -468,20 +468,28 @@ export function NewEstimateScreen({ route, navigation }: any) {
           <AiScanHistorySection
             history={aiHistory}
             onRevert={async (record) => {
-              const estimateToUpdate = await EstimateRepository.getEstimate(editingIdRef.current!);
-              if (!estimateToUpdate) return;
-              // Replace intakeAnswers with snapshot — strip AI metadata keys
-              const cleaned: Record<string, AnswerValue> = {};
-              for (const [k, v] of Object.entries(record.answersSnapshot)) {
-                if (!k.startsWith(AI_META_PREFIX)) cleaned[k] = v as AnswerValue;
+              try {
+                const estimateToUpdate = await EstimateRepository.getEstimate(editingIdRef.current!);
+                if (!estimateToUpdate) { showToast('Estimate not found'); return; }
+                if (!record.answersSnapshot || typeof record.answersSnapshot !== 'object') {
+                  showToast('Snapshot is invalid or missing');
+                  return;
+                }
+                // Replace intakeAnswers with snapshot — strip AI metadata keys
+                const cleaned: Record<string, AnswerValue> = {};
+                for (const [k, v] of Object.entries(record.answersSnapshot)) {
+                  if (!k.startsWith(AI_META_PREFIX)) cleaned[k] = v as AnswerValue;
+                }
+                setAnswers(cleaned);
+                await EstimateRepository.upsertEstimate({
+                  ...estimateToUpdate,
+                  intakeAnswers: cleaned,
+                  updatedAt: new Date().toISOString(),
+                });
+                showToast('Reverted to snapshot ✓');
+              } catch (err: any) {
+                showToast(`Revert failed: ${err?.message ?? 'unknown error'}`);
               }
-              setAnswers(cleaned);
-              await EstimateRepository.upsertEstimate({
-                ...estimateToUpdate,
-                intakeAnswers: cleaned,
-                updatedAt: new Date().toISOString(),
-              });
-              showToast('Reverted to snapshot ✓');
             }}
           />
         )}

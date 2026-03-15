@@ -47,6 +47,7 @@ import { EstimateListScreen }        from './src/estimateOS/screens/EstimateList
 
 import { T } from './src/estimateOS/theme';
 import { configureNotificationHandler } from './src/estimateOS/services/notificationService';
+import { missingFirebaseVars } from './src/estimateOS/firebase/config';
 
 // Configure local notification display behaviour (foreground alerts + Android channel).
 // Called at module load so it is set before any notification can arrive.
@@ -76,7 +77,7 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundary
               {this.state.error.message}
             </Text>
             <Text style={{ color: '#888', fontSize: 12, marginTop: 12, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' }}>
-              {this.state.error.stack}
+              {this.state.error.stack ?? '(no stack trace)'}
             </Text>
           </ScrollView>
         </View>
@@ -258,6 +259,21 @@ function AuthStack() {
 
 // ─── App gates: auth → onboarding → main ─────────────────────────────────────
 
+function FirebaseMissingBanner() {
+  if (missingFirebaseVars.length === 0) return null;
+  return (
+    <View style={{ backgroundColor: '#7f1d1d', padding: 12, paddingTop: 48 }}>
+      <Text style={{ color: '#fca5a5', fontWeight: '700', fontSize: 13, marginBottom: 4 }}>
+        Firebase Not Configured
+      </Text>
+      <Text style={{ color: '#fca5a5', fontSize: 11, lineHeight: 16 }}>
+        Missing env vars — app is running without a backend. Add to your .env or EAS Secrets:{'\n'}
+        {missingFirebaseVars.join(', ')}
+      </Text>
+    </View>
+  );
+}
+
 function AppGate() {
   const { user, loading } = useAuth();
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
@@ -272,15 +288,6 @@ function AppGate() {
   if (loading || (user && onboardingDone === null)) {
     return (
       <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: '#fff', fontSize: 24, fontWeight: '700', marginBottom: 16 }}>
-          NAV BOOT OK
-        </Text>
-        <Text style={{ color: '#aaa', fontSize: 14, marginBottom: 8 }}>
-          {loading ? 'Firebase auth loading...' : 'Checking onboarding...'}
-        </Text>
-        <Text style={{ color: '#666', fontSize: 12, marginBottom: 16 }}>
-          user={user ? 'yes' : 'null'} onboarding={String(onboardingDone)}
-        </Text>
         <ActivityIndicator color="#fff" size="large" />
       </View>
     );
@@ -310,6 +317,7 @@ export default function App() {
       <SafeAreaProvider>
         <AuthProvider>
           <StatusBar barStyle="light-content" backgroundColor={T.bg} />
+          <FirebaseMissingBanner />
           <NavigationContainer theme={NAV_THEME}>
             <AppGate />
           </NavigationContainer>

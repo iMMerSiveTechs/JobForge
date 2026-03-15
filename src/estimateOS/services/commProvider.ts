@@ -134,11 +134,11 @@ async function sendEmailUnified(
   attachments?: string[],
 ): Promise<ServiceResult<UnifiedSendResult>> {
   try {
-    let MailComposer: any = null;
+    let MailComposer: { isAvailableAsync: () => Promise<boolean>; composeAsync: (opts: Record<string, unknown>) => Promise<void> } | null = null;
     try { MailComposer = require('expo-mail-composer'); } catch {}
 
     if (MailComposer && (await MailComposer.isAvailableAsync())) {
-      const opts: any = {
+      const opts: Record<string, unknown> = {
         recipients: to ? [to] : [],
         subject,
         body,
@@ -269,11 +269,11 @@ async function sendEmail(
 ): Promise<ServiceResult<SendResult>> {
   if (useDeviceComposer) {
     try {
-      let MailComposer: any = null;
+      let MailComposer: { isAvailableAsync: () => Promise<boolean>; composeAsync: (opts: Record<string, unknown>) => Promise<void> } | null = null;
       try { MailComposer = require('expo-mail-composer'); } catch {}
 
       if (MailComposer && (await MailComposer.isAvailableAsync())) {
-        const opts: any = { recipients: [to], subject, body };
+        const opts: Record<string, unknown> = { recipients: [to], subject, body };
         if (attachments && attachments.length > 0) {
           opts.attachments = attachments;
         }

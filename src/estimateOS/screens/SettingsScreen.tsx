@@ -1,6 +1,6 @@
 // ─── SettingsScreen ────────────────────────────────────────────────────────
 // Business Profile, Export Settings, AI Features, Integrations, Credits
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet,
   SafeAreaView, Switch, ActivityIndicator, Animated, Alert,
@@ -107,16 +107,23 @@ export function SettingsScreen({ navigation }: any) {
   const [creditBalance, setCreditBalance] = useState(0);
   const [showCredits, setShowCredits]     = useState(false);
   const { show: showToast, Toast } = useToast();
+  // Track whether the user has made unsaved edits so a re-focus load
+  // does not overwrite in-progress changes.
+  const isDirtyRef = useRef(false);
 
   const load = useCallback(() => {
     (async () => {
       // Load settings and credits independently so a credits failure doesn't
       // reset previously loaded settings to defaults.
-      try {
-        const s = await getSettings();
-        setSettings(s);
-      } catch {
-        setSettings(prev => prev ?? DEFAULT_SETTINGS);
+      // If the user has unsaved edits, skip the settings reload to avoid
+      // overwriting in-progress changes (race condition guard).
+      if (!isDirtyRef.current) {
+        try {
+          const s = await getSettings();
+          setSettings(s);
+        } catch {
+          setSettings(prev => prev ?? DEFAULT_SETTINGS);
+        }
       }
       try {
         const bal = await getCredits();
@@ -131,7 +138,10 @@ export function SettingsScreen({ navigation }: any) {
 
   if (!settings) return <SafeAreaView style={s.safe}><ActivityIndicator style={{ marginTop: 60 }} color={T.accent} /></SafeAreaView>;
 
-  const patch = (update: Partial<AppSettings>) => setSettings(prev => prev ? { ...prev, ...update } : prev);
+  const patch = (update: Partial<AppSettings>) => {
+    isDirtyRef.current = true;
+    setSettings(prev => prev ? { ...prev, ...update } : prev);
+  };
   const patchProfile = (p: Partial<typeof settings.businessProfile>) => patch({ businessProfile: { ...settings.businessProfile, ...p } });
   const patchExport = (e: Partial<typeof settings.exportSettings>) => patch({ exportSettings: { ...settings.exportSettings, ...e } });
   const patchAi = (a: Partial<typeof settings.aiFeatures>) => patch({ aiFeatures: { ...settings.aiFeatures, ...a } });
@@ -141,6 +151,7 @@ export function SettingsScreen({ navigation }: any) {
     setSaving(true);
     try {
       await saveSettings(settings);
+      isDirtyRef.current = false;
       showToast('Saved ✓');
     } catch (err: any) {
       showToast(`Save failed: ${err?.message ?? 'unknown error'}`);

@@ -33,8 +33,11 @@ function recordsCol(estimateId: string) {
 }
 
 function deserialize(id: string, data: Record<string, any>): AiScanRecord {
-  const ts = (v: any): string =>
-    v instanceof Timestamp ? v.toDate().toISOString() : (v ?? new Date().toISOString());
+  const ts = (v: any): string => {
+    if (v instanceof Timestamp) return v.toDate().toISOString();
+    if (typeof v === 'string' && !isNaN(Date.parse(v))) return v;
+    return new Date().toISOString();
+  };
   return {
     id,
     estimateId:       data.estimateId ?? '',

@@ -81,6 +81,13 @@ const FOCUS_PRESETS = [
   { label: 'Safety Hazards',icon: '⚠️', prompt: 'Identify safety concerns or special precautions' },
 ];
 
+// ─── Phase flag ───────────────────────────────────────────────────────────────
+// Set EXPO_PUBLIC_AI_PHASE=1 (or higher) in your .env / EAS Secrets to bypass
+// the Phase 0 DemoModal and enable the real AI flow. When undefined the app
+// defaults to Phase 0 (demo/safe mode).
+const AI_PHASE = Number(process.env.EXPO_PUBLIC_AI_PHASE ?? 0);
+const IS_DEMO_MODE = AI_PHASE < 1;
+
 // ─── Phase 0: Demo Modal ──────────────────────────────────────────────────────
 function DemoModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   return (
@@ -112,14 +119,16 @@ const dm = StyleSheet.create({
 
 // ─── Confidence components ────────────────────────────────────────────────────
 function ConfBar({ score, level }: { score?: number; level: 'high' | 'medium' | 'low' }) {
-  const numericScore = score ?? (level === 'high' ? 0.85 : level === 'medium' ? 0.55 : 0.25);
+  const rawScore = score ?? (level === 'high' ? 0.85 : level === 'medium' ? 0.55 : 0.25);
+  const numericScore = isFinite(rawScore) && !isNaN(rawScore) ? Math.max(0, Math.min(1, rawScore)) : 0.25;
+  const pct = Math.round(numericScore * 100);
   const color = level === 'high' ? D.green : level === 'medium' ? D.amber : D.sub;
   return (
     <View style={cfb.wrap}>
       <View style={cfb.track}>
-        <View style={[cfb.bar, { width: `${Math.round(numericScore * 100)}%` as any, backgroundColor: color }]} />
+        <View style={[cfb.bar, { width: `${pct}%` as any, backgroundColor: color }]} />
       </View>
-      <Text style={[cfb.label, { color }]}>{Math.round(numericScore * 100)}%</Text>
+      <Text style={[cfb.label, { color }]}>{pct}%</Text>
     </View>
   );
 }
@@ -649,18 +658,22 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
 
   const loadData = useCallback(() => {
     (async () => {
-      const [bal, cs, hist, custom, stripeOk] = await Promise.all([
-        getCredits(),
-        getCreditSettings(),
-        getAnalysisHistory(),
-        loadCustomVerticals(),
-        isStripeReady(),
-      ]);
-      setCredits(bal);
-      setCreditSettings(cs);
-      setHistory(hist as unknown as AiAnalysisRecord[]);
-      setAllVerticals(mergeVerticals(ALL_VERTICALS, custom));
-      setStripeConfigured(stripeOk);
+      try {
+        const [bal, cs, hist, custom, stripeOk] = await Promise.all([
+          getCredits().catch(() => null),
+          getCreditSettings().catch(() => null),
+          getAnalysisHistory().catch(() => []),
+          loadCustomVerticals().catch(() => []),
+          isStripeReady().catch(() => false),
+        ]);
+        if (bal) setCredits(bal);
+        if (cs) setCreditSettings(cs);
+        setHistory((hist ?? []) as unknown as AiAnalysisRecord[]);
+        setAllVerticals(mergeVerticals(ALL_VERTICALS, custom ?? []));
+        setStripeConfigured(stripeOk ?? false);
+      } catch (err) {
+        console.warn('[AiSiteAnalysis] loadData error (non-fatal):', err);
+      }
     })();
   }, []);
 
@@ -743,6 +756,9 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
         // Await real Gemini result (may already be resolved, or still pending).
         // If provider returned data, use it; otherwise fall back to simulation.
         const serviceResult = await geminiPromise;
+        if (!serviceResult.data) {
+          console.info('[AiSiteAnalysis] Using simulated result — real provider not available or returned no data.');
+        }
         const record = serviceResult.data ?? buildSimulatedResult(currentJobs, focusPrompt, vertical);
         setResult(record);
         setAnalyzing(false);
@@ -763,66 +779,77 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
   // Apply AI result to estimate (preserved from prior phases)
   const applyToEstimate = async (record: AiAnalysisRecord) => {
     if (!estimateId) return;
-    const estimate = await EstimateRepository.getEstimate(estimateId);
-    if (!estimate) { Alert.alert('Estimate not found', 'The estimate could not be loaded.'); return; }
+    try {
+      const estimate = await EstimateRepository.getEstimate(estimateId);
+      if (!estimate) { Alert.alert('Estimate not found', 'The estimate could not be loaded.'); return; }
 
-    const preSnapshot: Record<string, any> = {};
-    for (const [k, v] of Object.entries(estimate.intakeAnswers)) {
-      if (k.startsWith('__ai_')) continue;
-      if (typeof v === 'string' && (v.startsWith('data:') || v.length > 2048)) continue;
-      preSnapshot[k] = v;
-    }
-
-    const merged = { ...estimate.intakeAnswers };
-    const evidenceByQuestion: Record<string, EvidenceEntry> = {};
-    for (const adj of record.suggestedAdjustments) {
-      if (adj.questionId && adj.suggestedValue !== undefined) {
-        merged[adj.questionId] = adj.suggestedValue;
-        merged[`${adj.questionId}__ai_confidence`] = adj.confidence;
-        merged[`${adj.questionId}__ai_source`] = 'ai_scan';
-        evidenceByQuestion[adj.questionId] = {
-          value: adj.suggestedValue, confidence: adj.confidenceScore,
-          evidence: adj.evidence ?? adj.note, mediaIndex: adj.mediaIndex, boundingBox: adj.boundingBox,
-        };
+      const preSnapshot: Record<string, any> = {};
+      for (const [k, v] of Object.entries(estimate.intakeAnswers ?? {})) {
+        if (k.startsWith('__ai_')) continue;
+        if (typeof v === 'string' && (v.startsWith('data:') || v.length > 2048)) continue;
+        preSnapshot[k] = v;
       }
+
+      const merged = { ...(estimate.intakeAnswers ?? {}) };
+      const evidenceByQuestion: Record<string, EvidenceEntry> = {};
+      for (const adj of record.suggestedAdjustments ?? []) {
+        if (adj.questionId && adj.suggestedValue !== undefined) {
+          merged[adj.questionId] = adj.suggestedValue;
+          merged[`${adj.questionId}__ai_confidence`] = adj.confidence;
+          merged[`${adj.questionId}__ai_source`] = 'ai_scan';
+          evidenceByQuestion[adj.questionId] = {
+            value: adj.suggestedValue, confidence: adj.confidenceScore,
+            evidence: adj.evidence ?? adj.note, mediaIndex: adj.mediaIndex, boundingBox: adj.boundingBox,
+          };
+        }
+      }
+
+      // Persist processed local photo URIs so EstimateDetailScreen can show a count.
+      const photoUris = lastJobsRef.current
+        .filter(j => j.kind === 'photo' && (j.outputUri ?? j.uri))
+        .map(j => j.outputUri ?? j.uri!);
+      const existingPhotos = estimate.photos ?? [];
+      const allPhotos = [...existingPhotos, ...photoUris.filter(u => !existingPhotos.includes(u))];
+
+      await EstimateRepository.upsertEstimate({ ...estimate, intakeAnswers: merged, photos: allPhotos, updatedAt: new Date().toISOString() });
+
+      const histRecord: AiScanRecord = {
+        id: makeId(), estimateId, createdAt: record.createdAt, summary: record.summary,
+        answersSnapshot: preSnapshot, evidenceByQuestion,
+      };
+      // Append history — secondary, non-blocking
+      try { await appendAiHistory(histRecord); } catch (histErr) { console.warn('[AI] appendAiHistory failed (non-fatal):', histErr); }
+
+      const appliedCount = (record.suggestedAdjustments ?? []).filter(a => a.questionId).length;
+      Alert.alert('✅ Applied', `${appliedCount} answer${appliedCount !== 1 ? 's' : ''} pre-filled from AI analysis.`, [{
+        text: 'OK', onPress: () => navigation.navigate('NewEstimate', { estimateId }),
+      }]);
+    } catch (err: any) {
+      console.error('[AI] applyToEstimate failed:', err);
+      Alert.alert('Apply Failed', err?.message ?? 'Could not apply AI results to the estimate. Please try again.');
     }
-
-    // Persist processed local photo URIs so EstimateDetailScreen can show a count.
-    const photoUris = lastJobsRef.current
-      .filter(j => j.kind === 'photo' && (j.outputUri ?? j.uri))
-      .map(j => j.outputUri ?? j.uri!);
-    const existingPhotos = estimate.photos ?? [];
-    const allPhotos = [...existingPhotos, ...photoUris.filter(u => !existingPhotos.includes(u))];
-
-    await EstimateRepository.upsertEstimate({ ...estimate, intakeAnswers: merged, photos: allPhotos, updatedAt: new Date().toISOString() });
-
-    const histRecord: AiScanRecord = {
-      id: makeId(), estimateId, createdAt: record.createdAt, summary: record.summary,
-      answersSnapshot: preSnapshot, evidenceByQuestion,
-    };
-    await appendAiHistory(histRecord);
-
-    const appliedCount = record.suggestedAdjustments.filter(a => a.questionId).length;
-    Alert.alert('✅ Applied', `${appliedCount} answer${appliedCount !== 1 ? 's' : ''} pre-filled from AI analysis.`, [{
-      text: 'OK', onPress: () => navigation.navigate('NewEstimate', { estimateId }),
-    }]);
   };
 
   // Save AI answers to estimate without navigating away (Checkpoint)
   const checkpointEstimate = async (record: AiAnalysisRecord) => {
     if (!estimateId) return;
-    const estimate = await EstimateRepository.getEstimate(estimateId);
-    if (!estimate) { Alert.alert('Estimate not found'); return; }
-    const merged = { ...estimate.intakeAnswers };
-    for (const adj of record.suggestedAdjustments) {
-      if (adj.questionId && adj.suggestedValue !== undefined) {
-        merged[adj.questionId] = adj.suggestedValue;
-        merged[`${adj.questionId}__ai_confidence`] = adj.confidence;
-        merged[`${adj.questionId}__ai_source`] = 'ai_scan';
+    try {
+      const estimate = await EstimateRepository.getEstimate(estimateId);
+      if (!estimate) { Alert.alert('Estimate not found'); return; }
+      const merged = { ...(estimate.intakeAnswers ?? {}) };
+      for (const adj of record.suggestedAdjustments ?? []) {
+        if (adj.questionId && adj.suggestedValue !== undefined) {
+          merged[adj.questionId] = adj.suggestedValue;
+          merged[`${adj.questionId}__ai_confidence`] = adj.confidence;
+          merged[`${adj.questionId}__ai_source`] = 'ai_scan';
+        }
       }
+      await EstimateRepository.upsertEstimate({ ...estimate, intakeAnswers: merged, updatedAt: new Date().toISOString() });
+      Alert.alert('Checkpoint Saved', 'AI answers applied. Continue working or go back to the estimate.');
+    } catch (err: any) {
+      console.error('[AI] checkpointEstimate failed:', err);
+      Alert.alert('Checkpoint Failed', err?.message ?? 'Could not save AI answers. Please try again.');
     }
-    await EstimateRepository.upsertEstimate({ ...estimate, intakeAnswers: merged, updatedAt: new Date().toISOString() });
-    Alert.alert('Checkpoint Saved', 'AI answers applied. Continue working or go back to the estimate.');
   };
 
   const canAnalyze = jobs.some(j => j.status === 'ready') && !analyzing;
@@ -843,11 +870,13 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
             </TouchableOpacity>
           </View>
 
-          {/* Demo notice */}
-          <View style={s.demoNotice}>
-            <Text style={s.demoNoticeIcon}>🔬</Text>
-            <Text style={s.demoNoticeTxt}>AI is not connected in this build. Media intake is fully functional.</Text>
-          </View>
+          {/* Demo notice — only shown when EXPO_PUBLIC_AI_PHASE < 1 */}
+          {IS_DEMO_MODE && (
+            <View style={s.demoNotice}>
+              <Text style={s.demoNoticeIcon}>🔬</Text>
+              <Text style={s.demoNoticeTxt}>AI is not connected in this build. Media intake is fully functional.</Text>
+            </View>
+          )}
 
           {/* Phase 1: Production MediaGrid */}
           <Text style={s.sectionLabel}>UPLOAD MEDIA</Text>

@@ -67,10 +67,12 @@ export async function runAiAnalysis(
 
   // 3. Call real provider; fall back to simulation on any failure so the
   //    app never dead-ends (quota exceeded, parse failure, network, etc.).
+  //    Log the failure so it is visible in crash reporting tools.
   try {
     const result = await callProvider(input);
     return ok(result);
-  } catch {
+  } catch (err) {
+    console.warn('[aiProvider] callProvider failed — falling back to stub result:', err);
     return stubAnalysis(input);
   }
 }
@@ -98,9 +100,11 @@ function stubAnalysis(input: AiAnalysisInput): ServiceResult<AiAnalysisRecord> {
 // Switch to VertexAIBackend in firebase/config.ts when upgrading to Blaze.
 //
 // MODEL: Verify the current supported model ID in Firebase console → AI Logic.
-// Use a stable alias (e.g. "gemini-2.5-flash-lite") rather than a dated
-// preview suffix to avoid needing code changes when previews graduate.
-const GEMINI_MODEL = 'gemini-2.5-flash-lite';
+// Use a stable alias rather than a dated preview suffix to avoid needing code
+// changes when previews graduate. GEMINI_MODEL_FALLBACK is used automatically
+// if the primary model ID is ever rejected by the API.
+const GEMINI_MODEL          = 'gemini-2.5-flash-lite';
+const GEMINI_MODEL_FALLBACK = 'gemini-1.5-flash';
 
 // Cap images per call to stay within free-tier token limits.
 const MAX_IMAGES_PER_CALL = 6;
@@ -108,7 +112,8 @@ const MAX_IMAGES_PER_CALL = 6;
 async function callProvider(input: AiAnalysisInput): Promise<AiAnalysisRecord> {
   if (!ai) throw new Error('Firebase AI not initialized.');
 
-  const model = getGenerativeModel(ai, { model: GEMINI_MODEL });
+  // Try primary model; if it fails with a model-not-found error, retry with fallback.
+  let model = getGenerativeModel(ai, { model: GEMINI_MODEL });
 
   // Convert local file URIs → base64 inline data parts.
   const imageUris = input.imageUris.slice(0, MAX_IMAGES_PER_CALL);
@@ -122,8 +127,22 @@ async function callProvider(input: AiAnalysisInput): Promise<AiAnalysisRecord> {
   );
 
   const prompt = buildGeminiPrompt(input);
-  const result = await model.generateContent([...imageParts, { text: prompt }]);
-  const responseText = result.response.text();
+  let responseText: string;
+  try {
+    const result = await model.generateContent([...imageParts, { text: prompt }]);
+    responseText = result.response.text();
+  } catch (primaryErr: any) {
+    const msg = String(primaryErr?.message ?? '').toLowerCase();
+    const isModelError = msg.includes('not found') || msg.includes('model') || msg.includes('invalid');
+    if (isModelError) {
+      console.warn(`[aiProvider] Primary model "${GEMINI_MODEL}" failed, retrying with fallback "${GEMINI_MODEL_FALLBACK}":`, primaryErr);
+      model = getGenerativeModel(ai, { model: GEMINI_MODEL_FALLBACK });
+      const fallbackResult = await model.generateContent([...imageParts, { text: prompt }]);
+      responseText = fallbackResult.response.text();
+    } else {
+      throw primaryErr;
+    }
+  }
 
   return parseGeminiResponse(responseText, input);
 }
@@ -171,8 +190,9 @@ function parseGeminiResponse(text: string, input: AiAnalysisInput): AiAnalysisRe
   let parsed: { summary?: string; adjustments?: any[] } = {};
   try {
     parsed = JSON.parse(stripped);
-  } catch {
+  } catch (parseErr) {
     // Non-JSON response — use raw text as summary, no adjustments.
+    console.warn('[aiProvider] Gemini returned non-JSON response:', parseErr, '\nRaw text (first 300):', stripped.slice(0, 300));
     parsed = { summary: stripped.slice(0, 300), adjustments: [] };
   }
 

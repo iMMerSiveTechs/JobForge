@@ -65,6 +65,10 @@ export function EstimateListScreen({ navigation }: any) {
           data={estimates}
           keyExtractor={e => e.id}
           contentContainerStyle={s.list}
+          initialNumToRender={15}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews
           ListEmptyComponent={
             <View style={s.empty}>
               <Text style={s.emptyIcon}>📝</Text>

@@ -143,8 +143,12 @@ async function processNext(): Promise<void> {
     });
   }
 
-  // Move to next queued item
-  processNext();
+  // Move to next queued item — unhandled rejection here would silently stop
+  // the queue, so we catch and log instead of letting it propagate.
+  processNext().catch(err => {
+    console.error('[MediaJobQueue] Unexpected error in processNext — queue stopped:', err);
+    _processing = false;
+  });
 }
 
 async function simProgress(id: string, from: number, to: number): Promise<void> {

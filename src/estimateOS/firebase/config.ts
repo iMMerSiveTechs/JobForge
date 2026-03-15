@@ -35,6 +35,9 @@ if (missingVars.length > 0) {
   console.error('[Firebase] Missing build-time env vars. Add to EAS Secrets:', missingVars);
 }
 
+/** List of missing EXPO_PUBLIC_FIREBASE_* vars. Empty when fully configured. */
+export const missingFirebaseVars: string[] = missingVars;
+
 // ── Safe initialization — never throws at module load ───────────────────────
 
 let _app:       FirebaseApp       | null = null;

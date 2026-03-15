@@ -64,7 +64,7 @@ function cacheKeyStr(k: CacheKey): string {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function round5(n: number): number { return Math.round(n / 5) * 5; }
-function clamp(n: number): number  { return Math.max(0, isFinite(n) ? n : 0); }
+function clamp(n: number): number  { return Math.max(0, isFinite(n) && !isNaN(n) ? n : 0); }
 
 type TriggerableRule = ConditionalAddonRule | AdderRule | MultiplierRule;
 
@@ -363,10 +363,10 @@ export function computePricingV2(
     hasOverrides: Object.keys(overrides).length > 0,
   };
 
-  // ── Cache ─────────────────────────────────────────────────────────────────────
+  // ── Cache (FIFO eviction — Map preserves insertion order) ─────────────────────
   if (_cache.size >= MAX_CACHE) {
     const firstKey = _cache.keys().next().value;
-    if (firstKey) _cache.delete(firstKey);
+    if (firstKey !== undefined) _cache.delete(firstKey);
   }
   _cache.set(cacheKeyStr(cacheKey), { key: cacheKey, result });
 

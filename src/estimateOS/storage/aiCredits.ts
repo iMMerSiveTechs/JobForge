@@ -50,10 +50,18 @@ export async function getCredits(): Promise<CreditBalance> {
     return { balance: 0, updatedAt: new Date().toISOString() };
   }
   const data = snap.data();
+  const rawUpdatedAt = data.updatedAt;
+  let updatedAt: string;
+  if (rawUpdatedAt && typeof rawUpdatedAt.toDate === 'function') {
+    updatedAt = rawUpdatedAt.toDate().toISOString();
+  } else if (typeof rawUpdatedAt === 'string' && !isNaN(Date.parse(rawUpdatedAt))) {
+    updatedAt = rawUpdatedAt;
+  } else {
+    updatedAt = new Date().toISOString();
+  }
   return {
-    balance: data.balance ?? 0,
-    updatedAt:
-      data.updatedAt?.toDate?.().toISOString?.() ?? new Date().toISOString(),
+    balance: typeof data.balance === 'number' ? data.balance : 0,
+    updatedAt,
   };
 }
 
@@ -118,10 +126,20 @@ export type PurchaseResult =
   | { success: true; creditsAdded: number; newBalance: number }
   | { success: false; errorType: 'billing_not_configured' | 'stripe_error' | 'user_cancelled'; message: string };
 
+// Rate-limit purchases to prevent accidental double-taps or multiple rapid calls.
+// Cooldown of 5 seconds between purchase attempts.
+let _lastPurchaseAttempt = 0;
+const PURCHASE_COOLDOWN_MS = 5000;
+
 export async function purchaseCredits(
   packId: string,
   stripeEnabled: boolean,
 ): Promise<PurchaseResult> {
+  const now = Date.now();
+  if (now - _lastPurchaseAttempt < PURCHASE_COOLDOWN_MS) {
+    return { success: false, errorType: 'stripe_error', message: 'Please wait a moment before trying again.' };
+  }
+  _lastPurchaseAttempt = now;
   const pack = AI_CREDIT_PACKS.find(p => p.id === packId);
   if (!pack) {
     return { success: false, errorType: 'stripe_error', message: `Unknown credit pack: ${packId}` };

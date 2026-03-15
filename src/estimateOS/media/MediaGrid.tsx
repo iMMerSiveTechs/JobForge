@@ -10,7 +10,7 @@
  * - Shows a concise caps line + info tooltip.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView,
 } from 'react-native';
@@ -40,11 +40,15 @@ export function MediaGrid({ onJobsChange }: Props) {
   const [sheetOpen, setSheetOpen]   = useState(false);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  // Keep a ref to the latest onJobsChange so the subscription closure never
+  // holds a stale callback reference (avoids re-subscribing on every render).
+  const onJobsChangeRef = useRef(onJobsChange);
+  useEffect(() => { onJobsChangeRef.current = onJobsChange; });
 
   useEffect(() => {
     const unsub = subscribeJobs(j => {
       setJobs(j);
-      onJobsChange?.(j);
+      onJobsChangeRef.current?.(j);
     });
     return unsub;
   }, []);
