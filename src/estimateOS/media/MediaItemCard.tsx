@@ -72,6 +72,8 @@ export function MediaItemCard({
 
       {/* Thumbnail */}
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={`${job.kind === 'video' ? 'Video' : 'Photo'} media item`}
         style={s.thumb}
         activeOpacity={0.85}
         onLongPress={() => setReordering(r => !r)}
@@ -119,6 +121,8 @@ export function MediaItemCard({
 
       {/* Remove button */}
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Remove"
         style={s.removeBtn}
         onPress={() => onRemove(job.id)}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -130,6 +134,8 @@ export function MediaItemCard({
       {reordering && (
         <View style={s.reorderOverlay}>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Move left"
             style={[s.moveBtn, isFirst && s.moveBtnDisabled]}
             onPress={() => !isFirst && onMoveLeft(job.id)}
             disabled={isFirst}
@@ -137,12 +143,16 @@ export function MediaItemCard({
             <Text style={s.moveTxt}>◀</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Done reordering"
             style={s.moveDone}
             onPress={() => setReordering(false)}
           >
             <Text style={s.moveDoneTxt}>Done</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Move right"
             style={[s.moveBtn, isLast && s.moveBtnDisabled]}
             onPress={() => !isLast && onMoveRight(job.id)}
             disabled={isLast}

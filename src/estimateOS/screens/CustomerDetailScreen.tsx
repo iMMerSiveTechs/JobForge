@@ -134,7 +134,7 @@ export function CustomerDetailScreen({ route, navigation }: any) {
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
         <Text style={{ color: T.text, fontSize: 16, fontWeight: '600' }}>Couldn't load customer</Text>
         <Text style={{ color: T.sub, fontSize: 14 }}>Check your connection and tap to retry</Text>
-        <TouchableOpacity onPress={load} style={{ backgroundColor: T.accent, borderRadius: radii.md, paddingHorizontal: 24, paddingVertical: 12 }}>
+        <TouchableOpacity onPress={load} style={{ backgroundColor: T.accent, borderRadius: radii.md, paddingHorizontal: 24, paddingVertical: 12 }} accessibilityRole="button" accessibilityLabel="Retry">
           <Text style={{ color: '#fff', fontWeight: '700' }}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -148,9 +148,9 @@ export function CustomerDetailScreen({ route, navigation }: any) {
       <SafeAreaView style={s.safe}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
           <View style={s.editHeader}>
-            <TouchableOpacity onPress={() => setEditing(false)}><Text style={s.cancel}>Cancel</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => setEditing(false)} accessibilityRole="button" accessibilityLabel="Cancel"><Text style={s.cancel}>Cancel</Text></TouchableOpacity>
             <Text style={s.editTitle}>Edit Customer</Text>
-            <TouchableOpacity onPress={saveEdit} disabled={saving}>
+            <TouchableOpacity onPress={saveEdit} disabled={saving} accessibilityRole="button" accessibilityLabel="Save changes">
               {saving ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={s.saveBtn}>Save</Text>}
             </TouchableOpacity>
           </View>
@@ -181,6 +181,8 @@ export function CustomerDetailScreen({ route, navigation }: any) {
                 key={opt}
                 style={[s.contactChip, preferredContact === opt && s.contactChipActive]}
                 onPress={() => setPreferredContact(opt)}
+                accessibilityRole="button"
+                accessibilityLabel={`Prefer ${opt} contact`}
               >
                 <Text style={[s.contactChipTxt, preferredContact === opt && s.contactChipTxtActive]}>
                   {PREFERRED_CONTACT_LABELS[opt]}
@@ -224,17 +226,17 @@ export function CustomerDetailScreen({ route, navigation }: any) {
               <Text style={s.customerName}>{customer.name}</Text>
               {customer.companyName && <Text style={s.companyLine}>{customer.companyName}</Text>}
               {customer.phone && (
-                <TouchableOpacity onPress={() => Linking.openURL('tel:' + customer.phone)}>
+                <TouchableOpacity onPress={() => Linking.openURL('tel:' + customer.phone)} accessibilityRole="button" accessibilityLabel={`Call ${customer.phone}`}>
                   <Text style={[s.infoLine, s.infoLink]}>📞 {customer.phone}</Text>
                 </TouchableOpacity>
               )}
               {customer.email && (
-                <TouchableOpacity onPress={() => Linking.openURL('mailto:' + customer.email)}>
+                <TouchableOpacity onPress={() => Linking.openURL('mailto:' + customer.email)} accessibilityRole="button" accessibilityLabel={`Email ${customer.email}`}>
                   <Text style={[s.infoLine, s.infoLink]}>✉️ {customer.email}</Text>
                 </TouchableOpacity>
               )}
               {customer.address && (
-                <TouchableOpacity onPress={() => Linking.openURL('maps:?q=' + encodeURIComponent(customer.address!))}>
+                <TouchableOpacity onPress={() => Linking.openURL('maps:?q=' + encodeURIComponent(customer.address!))} accessibilityRole="button" accessibilityLabel="View address on map">
                   <Text style={[s.infoLine, s.infoLink]}>📍 {customer.address}</Text>
                 </TouchableOpacity>
               )}
@@ -261,10 +263,10 @@ export function CustomerDetailScreen({ route, navigation }: any) {
           {customer.notes && <Text style={s.notes}>{customer.notes}</Text>}
 
           <View style={s.cardActions}>
-            <TouchableOpacity style={s.editBtn} onPress={startEdit}>
+            <TouchableOpacity style={s.editBtn} onPress={startEdit} accessibilityRole="button" accessibilityLabel="Edit customer">
               <Text style={s.editBtnTxt}>Edit</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={s.deleteBtn} onPress={handleDelete}>
+            <TouchableOpacity style={s.deleteBtn} onPress={handleDelete} accessibilityRole="button" accessibilityLabel="Delete customer">
               <Text style={s.deleteBtnTxt}>Delete</Text>
             </TouchableOpacity>
           </View>
@@ -299,10 +301,10 @@ export function CustomerDetailScreen({ route, navigation }: any) {
 
         {/* Quick comms */}
         <View style={s.commRow}>
-          <TouchableOpacity style={s.commBtn} onPress={() => setShowReminder(true)}>
+          <TouchableOpacity style={s.commBtn} onPress={() => setShowReminder(true)} accessibilityRole="button" accessibilityLabel="Set reminder">
             <Text style={s.commBtnTxt}>⏰ Reminder</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.commBtn} onPress={() => setShowComm(true)}>
+          <TouchableOpacity style={s.commBtn} onPress={() => setShowComm(true)} accessibilityRole="button" accessibilityLabel="Send message">
             <Text style={s.commBtnTxt}>✉️ Message</Text>
           </TouchableOpacity>
         </View>
@@ -319,7 +321,7 @@ export function CustomerDetailScreen({ route, navigation }: any) {
             if (t.kind === 'estimate') {
               const est = t.item;
               return (
-                <TouchableOpacity key={i} style={s.timelineRow} onPress={() => navigation.navigate('EstimateDetail', { estimateId: est.id })}>
+                <TouchableOpacity key={i} style={s.timelineRow} onPress={() => navigation.navigate('EstimateDetail', { estimateId: est.id })} accessibilityRole="button" accessibilityLabel={`View estimate ${est.estimateNumber}`}>
                   <View style={[s.timelineDot, { backgroundColor: T.accentLo }]}><Text style={{ fontSize: 12 }}>📋</Text></View>
                   <View style={{ flex: 1 }}>
                     <Text style={s.timelineTitle}>{est.estimateNumber ?? 'Estimate'} — {est.status}</Text>
@@ -332,7 +334,7 @@ export function CustomerDetailScreen({ route, navigation }: any) {
             } else {
               const inv = t.item;
               return (
-                <TouchableOpacity key={i} style={s.timelineRow} onPress={() => navigation.navigate('Invoice', { invoiceId: inv.id })}>
+                <TouchableOpacity key={i} style={s.timelineRow} onPress={() => navigation.navigate('Invoice', { invoiceId: inv.id })} accessibilityRole="button" accessibilityLabel={`View invoice ${inv.invoiceNumber}`}>
                   <View style={[s.timelineDot, { backgroundColor: T.greenLo }]}><Text style={{ fontSize: 12 }}>🧾</Text></View>
                   <View style={{ flex: 1 }}>
                     <Text style={s.timelineTitle}>{inv.invoiceNumber} — {inv.status}</Text>

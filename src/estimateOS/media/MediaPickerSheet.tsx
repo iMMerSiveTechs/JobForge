@@ -127,7 +127,7 @@ export function MediaPickerSheet({ visible, onClose, onAdded }: Props) {
           <Text style={s.title}>Add Media</Text>
           <Text style={s.caps}>{MEDIA_CAPS_SUMMARY}</Text>
 
-          <TouchableOpacity style={[s.option, s.optionPhoto]} onPress={handleAddPhotos}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add photos from library" style={[s.option, s.optionPhoto]} onPress={handleAddPhotos}>
             <Text style={s.optionIcon}>📷</Text>
             <View style={s.optionBody}>
               <Text style={s.optionLabel}>Add Photos</Text>
@@ -135,7 +135,7 @@ export function MediaPickerSheet({ visible, onClose, onAdded }: Props) {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[s.option, s.optionVideo]} onPress={handleAddVideo}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add video from library" style={[s.option, s.optionVideo]} onPress={handleAddVideo}>
             <Text style={s.optionIcon}>🎬</Text>
             <View style={s.optionBody}>
               <Text style={s.optionLabel}>Add Video</Text>
@@ -143,7 +143,7 @@ export function MediaPickerSheet({ visible, onClose, onAdded }: Props) {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={s.cancel} onPress={onClose}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancel" style={s.cancel} onPress={onClose}>
             <Text style={s.cancelTxt}>Cancel</Text>
           </TouchableOpacity>
         </TouchableOpacity>

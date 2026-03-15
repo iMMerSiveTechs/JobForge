@@ -193,6 +193,8 @@ export function OnboardingScreen({ onComplete }: Props) {
                     ]}
                     onPress={() => v.available && setVertical(v.id)}
                     disabled={!v.available}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${v.label} as service vertical`}
                   >
                     <Text style={s.verticalIcon}>{v.icon}</Text>
                     <Text style={[s.verticalLabel, vertical === v.id && s.verticalLabelActive, !v.available && s.verticalLabelDisabled]}>
@@ -221,7 +223,7 @@ export function OnboardingScreen({ onComplete }: Props) {
               <Text style={s.label}>Estimate Number Prefix</Text>
               <View style={s.prefixRow}>
                 {ESTIMATE_PREFIXES.map(p => (
-                  <TouchableOpacity key={p} style={[s.prefixChip, estimatePrefix === p && s.prefixChipActive]} onPress={() => setEstimatePrefix(p)}>
+                  <TouchableOpacity key={p} style={[s.prefixChip, estimatePrefix === p && s.prefixChipActive]} onPress={() => setEstimatePrefix(p)} accessibilityRole="button" accessibilityLabel={`Use ${p} as estimate prefix`}>
                     <Text style={[s.prefixTxt, estimatePrefix === p && s.prefixTxtActive]}>{p}</Text>
                   </TouchableOpacity>
                 ))}
@@ -231,7 +233,7 @@ export function OnboardingScreen({ onComplete }: Props) {
               <Text style={s.label}>Invoice Number Prefix</Text>
               <View style={s.prefixRow}>
                 {INVOICE_PREFIXES.map(p => (
-                  <TouchableOpacity key={p} style={[s.prefixChip, invoicePrefix === p && s.prefixChipActive]} onPress={() => setInvoicePrefix(p)}>
+                  <TouchableOpacity key={p} style={[s.prefixChip, invoicePrefix === p && s.prefixChipActive]} onPress={() => setInvoicePrefix(p)} accessibilityRole="button" accessibilityLabel={`Use ${p} as invoice prefix`}>
                     <Text style={[s.prefixTxt, invoicePrefix === p && s.prefixTxtActive]}>{p}</Text>
                   </TouchableOpacity>
                 ))}
@@ -257,16 +259,16 @@ export function OnboardingScreen({ onComplete }: Props) {
 
         <View style={s.footer}>
           {step > 1 && (
-            <TouchableOpacity style={s.backBtn} onPress={() => setStep(s => Math.max(s - 1, 1) as 1 | 2 | 3)}>
+            <TouchableOpacity style={s.backBtn} onPress={() => setStep(s => Math.max(s - 1, 1) as 1 | 2 | 3)} accessibilityRole="button" accessibilityLabel="Go back">
               <Text style={s.backTxt}>← Back</Text>
             </TouchableOpacity>
           )}
           {step < 3 ? (
-            <TouchableOpacity style={s.nextBtn} onPress={nextStep}>
+            <TouchableOpacity style={s.nextBtn} onPress={nextStep} accessibilityRole="button" accessibilityLabel="Continue">
               <Text style={s.nextTxt}>Continue →</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={s.finishBtn} onPress={finish} disabled={saving}>
+            <TouchableOpacity style={s.finishBtn} onPress={finish} disabled={saving} accessibilityRole="button" accessibilityLabel="Complete setup">
               {saving
                 ? <ActivityIndicator color="#fff" />
                 : <Text style={s.finishTxt}>Get Started →</Text>}

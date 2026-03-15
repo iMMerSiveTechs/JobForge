@@ -100,7 +100,7 @@ function DefaultsTab({ defaults, onChange, saving }: {
         </Text>
       </View>
 
-      <TouchableOpacity style={dt.saveBtn} onPress={commit} disabled={saving}>
+      <TouchableOpacity style={dt.saveBtn} onPress={commit} disabled={saving} accessibilityRole="button" accessibilityLabel="Save pricing defaults">
         {saving ? <ActivityIndicator color="#fff" /> : <Text style={dt.saveBtnTxt}>Save Defaults</Text>}
       </TouchableOpacity>
     </ScrollView>
@@ -140,7 +140,7 @@ function RulesTab({ verticals }: { verticals: VerticalConfig[] }) {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={rl.vpScroll}>
         <View style={rl.vpRow}>
           {verticals.map((v, i) => (
-            <TouchableOpacity key={v.id} style={[rl.vpChip, vertIdx === i && rl.vpChipActive]} onPress={() => setVertIdx(i)}>
+            <TouchableOpacity key={v.id} style={[rl.vpChip, vertIdx === i && rl.vpChipActive]} onPress={() => setVertIdx(i)} accessibilityRole="button" accessibilityLabel={`View rules for ${v.name}`}>
               <Text style={[rl.vpTxt, vertIdx === i && rl.vpTxtActive]}>{v.icon} {v.name}</Text>
             </TouchableOpacity>
           ))}
@@ -170,7 +170,7 @@ function RulesTab({ verticals }: { verticals: VerticalConfig[] }) {
         ))
       )}
 
-      <TouchableOpacity style={rl.addBtn} onPress={() => setShowBuilder(true)}>
+      <TouchableOpacity style={rl.addBtn} onPress={() => setShowBuilder(true)} accessibilityRole="button" accessibilityLabel="Add pricing rule">
         <Text style={rl.addBtnTxt}>+ Add Rule</Text>
       </TouchableOpacity>
 
@@ -265,7 +265,7 @@ function PresetsTab({ presets, onChange, saving }: {
         );
       })}
 
-      <TouchableOpacity style={ps.saveBtn} onPress={() => onChange(local)} disabled={saving}>
+      <TouchableOpacity style={ps.saveBtn} onPress={() => onChange(local)} disabled={saving} accessibilityRole="button" accessibilityLabel="Save quality presets">
         {saving ? <ActivityIndicator color="#fff" /> : <Text style={ps.saveBtnTxt}>Save Presets</Text>}
       </TouchableOpacity>
     </ScrollView>
@@ -337,7 +337,7 @@ export function PricingRulesScreen() {
       {/* Tab bar */}
       <View style={s.tabBar}>
         {TABS.map(tab => (
-          <TouchableOpacity key={tab.id} style={[s.tab, activeTab === tab.id && s.tabActive]} onPress={() => setActiveTab(tab.id)}>
+          <TouchableOpacity key={tab.id} style={[s.tab, activeTab === tab.id && s.tabActive]} onPress={() => setActiveTab(tab.id)} accessibilityRole="button" accessibilityLabel={`Show ${tab.label} tab`}>
             <Text style={[s.tabTxt, activeTab === tab.id && s.tabTxtActive]}>{tab.label}</Text>
           </TouchableOpacity>
         ))}

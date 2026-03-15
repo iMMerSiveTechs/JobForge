@@ -109,10 +109,10 @@ export function CommTemplatesScreen({ navigation }: any) {
                 <TypeBadge type={t.type} />
               </View>
               <View style={s.cardActions}>
-                <TouchableOpacity style={s.editBtn} onPress={() => openEdit(t)}>
+                <TouchableOpacity style={s.editBtn} onPress={() => openEdit(t)} accessibilityRole="button" accessibilityLabel="Edit template">
                   <Text style={s.editBtnTxt}>Edit</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={s.moreBtn} onPress={() => remove(t)}>
+                <TouchableOpacity style={s.moreBtn} onPress={() => remove(t)} accessibilityRole="button" accessibilityLabel="Reset template">
                   <Text style={s.moreBtnTxt}>{t.isDefault ? 'Reset' : 'Delete'}</Text>
                 </TouchableOpacity>
               </View>
@@ -122,7 +122,7 @@ export function CommTemplatesScreen({ navigation }: any) {
           </View>
         ))}
 
-        <TouchableOpacity style={s.addBtn} onPress={openNew}>
+        <TouchableOpacity style={s.addBtn} onPress={openNew} accessibilityRole="button" accessibilityLabel="Add custom template">
           <Text style={s.addBtnTxt}>+ Add Custom Template</Text>
         </TouchableOpacity>
 
@@ -135,10 +135,10 @@ export function CommTemplatesScreen({ navigation }: any) {
             <View style={s.sheetHeader}>
               <Text style={s.sheetTitle}>{editing?.isDefault === false && !DEFAULT_COMM_TEMPLATES.find(d => d.id === editing?.id) ? 'New Template' : 'Edit Template'}</Text>
               <View style={s.sheetHeaderActions}>
-                <TouchableOpacity onPress={() => setShowPreview(p => !p)}>
+                <TouchableOpacity onPress={() => setShowPreview(p => !p)} accessibilityRole="button" accessibilityLabel={showPreview ? 'Switch to edit mode' : 'Preview template'}>
                   <Text style={s.previewToggle}>{showPreview ? 'Edit' : 'Preview'}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setEditing(null)}>
+                <TouchableOpacity onPress={() => setEditing(null)} accessibilityRole="button" accessibilityLabel="Close">
                   <Text style={s.closeBtn}>✕</Text>
                 </TouchableOpacity>
               </View>
@@ -173,6 +173,8 @@ export function CommTemplatesScreen({ navigation }: any) {
                           key={tp}
                           style={[s.typeChip, editing.type === tp && s.typeChipActive]}
                           onPress={() => setEditing(e => e ? { ...e, type: tp } : e)}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Select template type: ${COMM_TEMPLATE_TYPE_LABELS[tp]}`}
                         >
                           <Text style={[s.typeChipTxt, editing.type === tp && s.typeChipTxtActive]}>
                             {COMM_TEMPLATE_TYPE_LABELS[tp]}
@@ -211,10 +213,10 @@ export function CommTemplatesScreen({ navigation }: any) {
 
             {!showPreview && (
               <View style={s.sheetFooter}>
-                <TouchableOpacity style={s.cancelBtn} onPress={() => setEditing(null)}>
+                <TouchableOpacity style={s.cancelBtn} onPress={() => setEditing(null)} accessibilityRole="button" accessibilityLabel="Cancel">
                   <Text style={s.cancelTxt}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={s.saveBtn} onPress={save}>
+                <TouchableOpacity style={s.saveBtn} onPress={save} accessibilityRole="button" accessibilityLabel="Save template">
                   <Text style={s.saveTxt}>Save Template</Text>
                 </TouchableOpacity>
               </View>

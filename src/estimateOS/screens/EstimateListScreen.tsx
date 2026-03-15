@@ -76,7 +76,10 @@ export function EstimateListScreen({ navigation }: any) {
               <Text style={s.emptySub}>
                 Capture a lead, pick a service, and get a{'\n'}price range in minutes.
               </Text>
-              <TouchableOpacity style={s.emptyBtn} onPress={() => navigation.navigate('NewEstimate')}>
+              <TouchableOpacity style={s.emptyBtn} onPress={() => navigation.navigate('NewEstimate')}
+                accessibilityRole="button"
+                accessibilityLabel="Create New Job"
+              >
                 <Text style={s.emptyBtnTxt}>+ New Job</Text>
               </TouchableOpacity>
             </View>
@@ -94,6 +97,8 @@ export function EstimateListScreen({ navigation }: any) {
               <TouchableOpacity
                 style={s.row}
                 onPress={() => navigation.navigate('EstimateDetail', { estimateId: est.id })}
+                accessibilityRole="button"
+                accessibilityLabel={`Open estimate for ${est.customer?.name ?? 'Unknown'}`}
               >
                 <View style={s.rowLeft}>
                   <Text style={s.customerName}>{est.customer.name}</Text>
@@ -121,7 +126,10 @@ export function EstimateListScreen({ navigation }: any) {
           }}
         />
       )}
-      <TouchableOpacity style={s.fab} onPress={() => navigation.navigate('NewEstimate')}>
+      <TouchableOpacity style={s.fab} onPress={() => navigation.navigate('NewEstimate')}
+        accessibilityRole="button"
+        accessibilityLabel="Create New Job"
+      >
         <Text style={s.fabTxt}>+</Text>
       </TouchableOpacity>
     </SafeAreaView>

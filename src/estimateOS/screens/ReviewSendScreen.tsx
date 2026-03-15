@@ -220,7 +220,7 @@ export function ReviewSendScreen({ route, navigation }: any) {
           {/* Template toggle */}
           <View style={s.templateHeader}>
             <Text style={s.fieldLabel}>Email Template</Text>
-            <TouchableOpacity onPress={() => setEditingTemplate(e => !e)}>
+            <TouchableOpacity onPress={() => setEditingTemplate(e => !e)} accessibilityRole="button" accessibilityLabel="Customize email">
               <Text style={s.templateToggle}>{editingTemplate ? 'Done' : 'Customize'}</Text>
             </TouchableOpacity>
           </View>
@@ -248,13 +248,13 @@ export function ReviewSendScreen({ route, navigation }: any) {
           )}
 
           {/* Send + Share buttons */}
-          <TouchableOpacity style={s.sendBtn} onPress={handleSend} disabled={sending}>
+          <TouchableOpacity style={s.sendBtn} onPress={handleSend} disabled={sending} accessibilityRole="button" accessibilityLabel="Send estimate via email">
             {sending ? <ActivityIndicator color="#fff" /> : (
               <Text style={s.sendBtnTxt}>{pdfUri ? '📎 Send with PDF' : '📤 Send via Email'}</Text>
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={[s.shareSecondaryBtn, sending && { opacity: 0.5 }]} onPress={handleShare} disabled={sending}>
+          <TouchableOpacity style={[s.shareSecondaryBtn, sending && { opacity: 0.5 }]} onPress={handleShare} disabled={sending} accessibilityRole="button" accessibilityLabel="Share estimate">
             <Text style={s.shareSecondaryTxt}>{pdfUri ? '📄 Share PDF' : '📤 Share via Share Sheet'}</Text>
           </TouchableOpacity>
 

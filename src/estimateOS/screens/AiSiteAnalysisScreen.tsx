@@ -896,6 +896,8 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
                     key={preset.label}
                     style={[s.presetChip, active && s.presetChipActive]}
                     onPress={() => selectPreset(preset)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${active ? 'Deselect' : 'Select'} focus: ${preset.label}`}
                   >
                     <Text style={s.presetIcon}>{preset.icon}</Text>
                     <Text style={[s.presetLabel, active && s.presetLabelActive]}>{preset.label}</Text>
@@ -939,7 +941,7 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
 
           {/* Last result preview */}
           {result && !analyzing && (
-            <TouchableOpacity style={s.lastResultCard} onPress={() => setShowResult(true)}>
+            <TouchableOpacity style={s.lastResultCard} onPress={() => setShowResult(true)} accessibilityRole="button" accessibilityLabel="View Latest Analysis">
               <View style={s.lastResultHeader}>
                 <Text style={s.lastResultIcon}>✅</Text>
                 <View style={{ flex: 1 }}>
@@ -959,7 +961,7 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
               <View style={{ flex: 1 }}>
                 <Text style={s.failureTxt}>{failureMessage}</Text>
                 {lastJobsRef.current.length > 0 && (
-                  <TouchableOpacity style={s.retryBtn} onPress={retryAnalysis}>
+                  <TouchableOpacity style={s.retryBtn} onPress={retryAnalysis} accessibilityRole="button" accessibilityLabel="Retry with Last Media">
                     <Text style={s.retryBtnTxt}>↺ Retry with last media</Text>
                   </TouchableOpacity>
                 )}
@@ -972,6 +974,8 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
             style={[s.analyzeBtn, !canAnalyze && s.analyzeBtnDisabled]}
             onPress={() => runAnalysis(false)}
             disabled={!canAnalyze}
+            accessibilityRole="button"
+            accessibilityLabel={analyzing ? 'Analyzing' : 'Run AI Analysis'}
           >
             {analyzing ? (
               <Text style={s.analyzeBtnTxt}>Analyzing…</Text>
@@ -995,7 +999,7 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
                 <HistoryItem key={rec.id} record={rec} onView={() => { setHistoryRecord(rec); setShowHistory(true); }} />
               ))}
               {history.length > 3 && (
-                <TouchableOpacity style={s.viewAllBtn} onPress={() => setShowHistory(true)}>
+                <TouchableOpacity style={s.viewAllBtn} onPress={() => setShowHistory(true)} accessibilityRole="button" accessibilityLabel={`View all ${history.length} analyses`}>
                   <Text style={s.viewAllTxt}>View all {history.length} analyses</Text>
                 </TouchableOpacity>
               )}
@@ -1023,7 +1027,7 @@ export function AiSiteAnalysisScreen({ navigation, route }: any) {
       >
         <SafeAreaView style={s.safe}>
           <View style={s.histModalHeader}>
-            <TouchableOpacity onPress={() => setShowHistory(false)}><Text style={s.histModalClose}>Done</Text></TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowHistory(false)} accessibilityRole="button" accessibilityLabel="Close Analysis History"><Text style={s.histModalClose}>Done</Text></TouchableOpacity>
             <Text style={s.histModalTitle}>Analysis History</Text>
             <View style={{ width: 50 }} />
           </View>

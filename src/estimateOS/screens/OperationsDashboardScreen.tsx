@@ -41,7 +41,7 @@ type PipelineBucket = { status: FollowUpStatus; label: string; count: number; bg
 
 function StatCard({ label, value, sub, color, onPress }: { label: string; value: string | number; sub?: string; color?: string; onPress?: () => void }) {
   return (
-    <TouchableOpacity style={[stat.card, { borderColor: color ?? T.border }]} onPress={onPress} disabled={!onPress}>
+    <TouchableOpacity style={[stat.card, { borderColor: color ?? T.border }]} onPress={onPress} disabled={!onPress} accessibilityRole="button" accessibilityLabel={`${label}: ${value}`}>
       <Text style={[stat.value, { color: color ?? T.text }]}>{value}</Text>
       <Text style={stat.label}>{label}</Text>
       {sub ? <Text style={stat.sub}>{sub}</Text> : null}
@@ -59,7 +59,7 @@ function SectionHeader({ title, action, onAction }: { title: string; action?: st
   return (
     <View style={sh.row}>
       <Text style={sh.txt}>{title}</Text>
-      {action && <TouchableOpacity onPress={onAction}><Text style={sh.action}>{action}</Text></TouchableOpacity>}
+      {action && <TouchableOpacity onPress={onAction} accessibilityRole="button" accessibilityLabel={action}><Text style={sh.action}>{action}</Text></TouchableOpacity>}
     </View>
   );
 }
@@ -210,15 +210,15 @@ export function OperationsDashboardScreen({ navigation }: any) {
 
         {/* Quick action strip */}
         <View style={s.quickActions}>
-          <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('Intake')}>
+          <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('Intake')} accessibilityRole="button" accessibilityLabel="Create New Lead">
             <Text style={s.quickIcon}>📋</Text>
             <Text style={s.quickTxt}>New Lead</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('NewEstimate')}>
+          <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('NewEstimate')} accessibilityRole="button" accessibilityLabel="Create New Job">
             <Text style={s.quickIcon}>📝</Text>
             <Text style={s.quickTxt}>New Job</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('CustomersTab')}>
+          <TouchableOpacity style={s.quickBtn} onPress={() => navigation.navigate('CustomersTab')} accessibilityRole="button" accessibilityLabel="View Customers">
             <Text style={s.quickIcon}>👥</Text>
             <Text style={s.quickTxt}>Customers</Text>
           </TouchableOpacity>
@@ -290,6 +290,8 @@ export function OperationsDashboardScreen({ navigation }: any) {
                     <TouchableOpacity
                       style={s.doneBtn}
                       onPress={() => handleCompleteReminder(item.reminder)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Mark reminder done for ${item.reminder.customerName}`}
                     >
                       <Text style={s.doneTxt}>Done</Text>
                     </TouchableOpacity>
@@ -298,7 +300,7 @@ export function OperationsDashboardScreen({ navigation }: any) {
               }
               if (item.kind === 'estimate') {
                 return (
-                  <TouchableOpacity key={i} style={s.attentionRow} onPress={() => navigation.navigate('EstimateDetail', { estimateId: item.estimate.id })}>
+                  <TouchableOpacity key={i} style={s.attentionRow} onPress={() => navigation.navigate('EstimateDetail', { estimateId: item.estimate.id })} accessibilityRole="button" accessibilityLabel={`Open estimate ${item.estimate.estimateNumber}`}>
                     <View style={[s.attentionDot, { backgroundColor: item.dotBg ?? T.redLo, borderColor: item.dotBorder ?? T.red }]}>
                       <Text style={{ fontSize: 12 }}>📋</Text>
                     </View>
@@ -312,7 +314,7 @@ export function OperationsDashboardScreen({ navigation }: any) {
               }
               if (item.kind === 'invoice') {
                 return (
-                  <TouchableOpacity key={i} style={s.attentionRow} onPress={() => navigation.navigate('Invoice', { invoiceId: item.invoice.id })}>
+                  <TouchableOpacity key={i} style={s.attentionRow} onPress={() => navigation.navigate('Invoice', { invoiceId: item.invoice.id })} accessibilityRole="button" accessibilityLabel={`Open invoice ${item.invoice.invoiceNumber}`}>
                     <View style={[s.attentionDot, { backgroundColor: T.amberLo, borderColor: T.amber }]}>
                       <Text style={{ fontSize: 12 }}>🧾</Text>
                     </View>
@@ -326,7 +328,7 @@ export function OperationsDashboardScreen({ navigation }: any) {
               }
               if (item.kind === 'intake') {
                 return (
-                  <TouchableOpacity key={i} style={s.attentionRow} onPress={() => navigation.navigate('Intake')}>
+                  <TouchableOpacity key={i} style={s.attentionRow} onPress={() => navigation.navigate('Intake')} accessibilityRole="button" accessibilityLabel={`View intake for ${item.draft.customerName}`}>
                     <View style={[s.attentionDot, { backgroundColor: T.indigoLo, borderColor: T.indigo }]}>
                       <Text style={{ fontSize: 12 }}>👤</Text>
                     </View>
@@ -369,10 +371,10 @@ export function OperationsDashboardScreen({ navigation }: any) {
                   Start by capturing a lead or creating your first estimate.
                   This dashboard will fill in as you use the app.
                 </Text>
-                <TouchableOpacity style={s.firstRunBtn} onPress={() => navigation.navigate('Intake')}>
+                <TouchableOpacity style={s.firstRunBtn} onPress={() => navigation.navigate('Intake')} accessibilityRole="button" accessibilityLabel="Capture First Lead">
                   <Text style={s.firstRunBtnTxt}>Capture First Lead →</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[s.firstRunBtn, { backgroundColor: T.surface, borderWidth: 1, borderColor: T.border }]} onPress={() => navigation.navigate('NewEstimate')}>
+                <TouchableOpacity style={[s.firstRunBtn, { backgroundColor: T.surface, borderWidth: 1, borderColor: T.border }]} onPress={() => navigation.navigate('NewEstimate')} accessibilityRole="button" accessibilityLabel="Start First Estimate">
                   <Text style={[s.firstRunBtnTxt, { color: T.text }]}>Or Start an Estimate →</Text>
                 </TouchableOpacity>
               </View>

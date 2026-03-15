@@ -137,6 +137,8 @@ export function RuleBuilderModal({ visible, questionOptions, onSave, onClose }: 
           <TouchableOpacity key={rt.type}
             style={[s.typeCard, ruleType === rt.type && s.typeCardActive]}
             onPress={() => setRuleType(rt.type)}
+            accessibilityRole="button"
+            accessibilityLabel={`Select rule type: ${rt.type}`}
           >
             <Text style={s.typeIcon}>{rt.icon}</Text>
             <View style={{ flex: 1 }}>
@@ -160,7 +162,7 @@ export function RuleBuilderModal({ visible, questionOptions, onSave, onClose }: 
         <Text style={s.fieldLabel}>Cost bucket</Text>
         <View style={s.bucketGrid}>
           {BUCKETS.map(b => (
-            <TouchableOpacity key={b} style={[s.bucketChip, bucket === b && s.bucketActive]} onPress={() => setBucket(b)}>
+            <TouchableOpacity key={b} style={[s.bucketChip, bucket === b && s.bucketActive]} onPress={() => setBucket(b)} accessibilityRole="button" accessibilityLabel={`${bucket === b ? 'Deselect' : 'Select'} ${b} bucket`}>
               <Text style={[s.bucketTxt, bucket === b && { color: T.text }]}>
                 {BUCKET_ICONS[b]} {BUCKET_LABELS[b]}
               </Text>
@@ -182,6 +184,8 @@ export function RuleBuilderModal({ visible, questionOptions, onSave, onClose }: 
             <TouchableOpacity key={q.id}
               style={[s.typeCard, questionId === q.id && s.typeCardActive]}
               onPress={() => setQuestionId(q.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`${questionId === q.id ? 'Deselect' : 'Select'} question: ${q.label}`}
             >
               <View style={{ flex: 1 }}>
                 <Text style={[s.typeLabel, questionId === q.id && { color: T.text }]}>{q.label}</Text>
@@ -267,7 +271,7 @@ export function RuleBuilderModal({ visible, questionOptions, onSave, onClose }: 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={s.safe}>
           <View style={s.header}>
-            <TouchableOpacity onPress={onClose}><Text style={s.cancelTxt}>Cancel</Text></TouchableOpacity>
+            <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Cancel"><Text style={s.cancelTxt}>Cancel</Text></TouchableOpacity>
             <Text style={s.headerTitle}>Rule Builder</Text>
             <Text style={s.stepCounter}>{step}/{totalSteps}</Text>
           </View>
@@ -291,7 +295,7 @@ export function RuleBuilderModal({ visible, questionOptions, onSave, onClose }: 
 
           <View style={s.footer}>
             {step > 1 && (
-              <TouchableOpacity style={s.backBtn} onPress={() => setStep(n => n - 1)}>
+              <TouchableOpacity style={s.backBtn} onPress={() => setStep(n => n - 1)} accessibilityRole="button" accessibilityLabel="Go back">
                 <Text style={s.backTxt}>← Back</Text>
               </TouchableOpacity>
             )}
@@ -299,6 +303,8 @@ export function RuleBuilderModal({ visible, questionOptions, onSave, onClose }: 
               style={[s.nextBtn, !canAdvance() && s.nextDis]}
               onPress={() => { if (isLast) { onSave(buildRule()); onClose(); } else setStep(n => n + 1); }}
               disabled={!canAdvance()}
+              accessibilityRole="button"
+              accessibilityLabel={isLast ? 'Save rule' : 'Next'}
             >
               <Text style={s.nextTxt}>{isLast ? 'Save Rule' : 'Next →'}</Text>
             </TouchableOpacity>

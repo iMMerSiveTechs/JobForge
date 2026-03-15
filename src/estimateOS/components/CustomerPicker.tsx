@@ -72,9 +72,9 @@ function CustomerFormModal({
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <SafeAreaView style={cf.safe}>
           <View style={cf.header}>
-            <TouchableOpacity onPress={onClose}><Text style={cf.cancel}>Cancel</Text></TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancel" onPress={onClose}><Text style={cf.cancel}>Cancel</Text></TouchableOpacity>
             <Text style={cf.title}>{initial ? 'Edit Customer' : 'New Customer'}</Text>
-            <TouchableOpacity onPress={save} disabled={saving}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Save customer" onPress={save} disabled={saving}>
               {saving ? <ActivityIndicator size="small" color={T.accent} /> : <Text style={cf.save}>Save</Text>}
             </TouchableOpacity>
           </View>
@@ -160,9 +160,9 @@ function PickerModal({
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={pm.safe}>
         <View style={pm.header}>
-          <TouchableOpacity onPress={onClose}><Text style={pm.cancel}>Cancel</Text></TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancel" onPress={onClose}><Text style={pm.cancel}>Cancel</Text></TouchableOpacity>
           <Text style={pm.title}>Link Customer</Text>
-          <TouchableOpacity onPress={() => setShowCreate(true)}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Create new customer" onPress={() => setShowCreate(true)}>
             <Text style={pm.add}>+ New</Text>
           </TouchableOpacity>
         </View>
@@ -181,7 +181,7 @@ function PickerModal({
           <View style={pm.empty}>
             <Text style={pm.emptyIcon}>👤</Text>
             <Text style={pm.emptyTxt}>{search ? 'No matches' : 'No customers yet'}</Text>
-            <TouchableOpacity style={pm.emptyBtn} onPress={() => setShowCreate(true)}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Create customer" style={pm.emptyBtn} onPress={() => setShowCreate(true)}>
               <Text style={pm.emptyBtnTxt}>Create Customer</Text>
             </TouchableOpacity>
           </View>
@@ -195,6 +195,8 @@ function PickerModal({
               const sel = item.id === selectedId;
               return (
                 <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${item.name}`}
                   style={[pm.row, sel && pm.rowActive]}
                   onPress={() => { onSelect(item); onClose(); }}
                 >
@@ -214,7 +216,7 @@ function PickerModal({
         )}
 
         {selectedId && (
-          <TouchableOpacity style={pm.unlink} onPress={() => { onSelect(null); onClose(); }}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Unlink customer" style={pm.unlink} onPress={() => { onSelect(null); onClose(); }}>
             <Text style={pm.unlinkTxt}>Unlink customer</Text>
           </TouchableOpacity>
         )}
@@ -269,7 +271,7 @@ export function CustomerPicker({ customerId, onSelect }: Props) {
   return (
     <View>
       {customer ? (
-        <TouchableOpacity style={w.card} onPress={() => setShowPicker(true)}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Change customer" style={w.card} onPress={() => setShowPicker(true)}>
           <View style={w.avatar}>
             <Text style={w.avatarTxt}>{customer.name.charAt(0).toUpperCase()}</Text>
           </View>
@@ -280,7 +282,7 @@ export function CustomerPicker({ customerId, onSelect }: Props) {
           <Text style={w.change}>Change</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={w.link} onPress={() => setShowPicker(true)}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Link customer" style={w.link} onPress={() => setShowPicker(true)}>
           <Text style={w.linkTxt}>👤 Link Customer</Text>
         </TouchableOpacity>
       )}

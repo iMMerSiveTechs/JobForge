@@ -103,7 +103,7 @@ export function FollowUpPanel({
 
       {/* Status picker modal */}
       <Modal visible={showStatusPicker} transparent animationType="slide" onRequestClose={() => setShowStatusPicker(false)}>
-        <TouchableOpacity style={s.overlay} activeOpacity={1} onPress={() => setShowStatusPicker(false)}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close" style={s.overlay} activeOpacity={1} onPress={() => setShowStatusPicker(false)}>
           <View style={s.sheet}>
             <Text style={s.sheetTitle}>Update Status</Text>
             <ScrollView>
@@ -113,6 +113,8 @@ export function FollowUpPanel({
                 return (
                   <TouchableOpacity
                     key={st}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Set status to ${st}`}
                     style={[s.statusRow, isCurrent && { backgroundColor: c.bg }]}
                     onPress={() => { onStatusChange(st); setShowStatusPicker(false); }}
                   >
@@ -151,10 +153,12 @@ export function FollowUpPanel({
               multiline
             />
             <View style={s.sheetFooter}>
-              <TouchableOpacity style={s.cancelBtn} onPress={() => setShowNextAction(false)}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Cancel" style={s.cancelBtn} onPress={() => setShowNextAction(false)}>
                 <Text style={s.cancelTxt}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Save"
                 style={s.saveBtn}
                 onPress={() => { onNextActionChange(draftDate, draftNote); setShowNextAction(false); }}
               >
