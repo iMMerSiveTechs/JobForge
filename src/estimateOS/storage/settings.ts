@@ -69,7 +69,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
     voiceInput: false,
     imageCreation: false,
     cloudSync: true,    // Firebase is already connected
-    stripeEnabled: false, // requires Stripe publishable key setup
+    stripeEnabled: true,
+    stripePublishableKey: 'pk_live_51Rj0jMCRnAVfE4Jh7yHR6Isnj2mlehJQF0qCrYktGN2ZtenrFPAFA6NPcIq2sPHyzboUKR4ytxqT12YvdAIL2d00009hNRWzBo',
   },
   emailTemplate: {
     subject: 'Estimate for {customer_name} – {address} – {estimate_number}',

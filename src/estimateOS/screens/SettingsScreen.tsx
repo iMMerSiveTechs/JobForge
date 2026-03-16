@@ -221,10 +221,9 @@ export function SettingsScreen({ navigation }: any) {
           />
           <ToggleRow
             label="Stripe Billing"
-            subLabel="Enable credit purchases — requires Stripe publishable key"
+            subLabel="Enable credit purchases"
             value={settings.integrations.stripeEnabled ?? false}
             onChange={v => patchInt({ stripeEnabled: v })}
-            comingSoon
           />
         </View>
 
